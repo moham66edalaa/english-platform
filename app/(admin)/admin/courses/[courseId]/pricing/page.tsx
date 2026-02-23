@@ -1,18 +1,27 @@
-// 📁 app/(admin)/admin/courses/[courseId]/pricing/page.tsx
-
-import { notFound }     from 'next/navigation'
+// app/(admin)/admin/courses/[courseId]/pricing/page.tsx
+import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import PricingEditor    from '@/components/admin/PricingEditor'
+import PricingEditor from '@/components/admin/PricingEditor'
+
+// تعريف نوع مؤقت (يمكن استبداله بالأنواع التلقائية من قاعدة البيانات)
+type CourseWithPlans = {
+  id: string
+  title: string
+  description: string | null
+  slug: string
+  plans: any[] // يمكن تحسين هذا النوع لاحقاً باستخدام Database['public']['Tables']['plans']['Row']
+}
 
 export default async function CoursePricingPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params
-  const supabase     = await createClient()
+  const supabase = await createClient()
 
+  // استخدام التحويل الصريح للنوع
   const { data: course } = await supabase
     .from('courses')
     .select('*, plans(*)')
     .eq('id', courseId)
-    .single()
+    .single() as { data: CourseWithPlans | null }
 
   if (!course) notFound()
 
