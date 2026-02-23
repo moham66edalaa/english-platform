@@ -1,12 +1,11 @@
-// 📁 app/(student)/learn/[courseSlug]/[lessonId]/page.tsx
-
+// app/(student)/learn/[courseSlug]/[lessonId]/page.tsx
 import { notFound, redirect } from 'next/navigation'
-import { requireUser }        from '@/lib/auth/helpers'
-import { createClient }       from '@/lib/supabase/server'
-import VideoPlayer            from '@/components/player/VideoPlayer'
-import LessonSidebar          from '@/components/player/LessonSidebar'
-import AttachmentList         from '@/components/player/AttachmentList'
-import LessonQuiz             from '@/components/player/LessonQuiz'
+import { requireUser } from '@/lib/auth/helpers'
+import { createClient } from '@/lib/supabase/server'
+import VideoPlayer from '@/components/player/VideoPlayer'
+import LessonSidebar from '@/components/player/LessonSidebar'
+import AttachmentList from '@/components/player/AttachmentList'
+import LessonQuiz from '@/components/player/LessonQuiz'
 
 export default async function LessonPage({
   params,
@@ -14,15 +13,15 @@ export default async function LessonPage({
   params: Promise<{ courseSlug: string; lessonId: string }>
 }) {
   const { courseSlug, lessonId } = await params
-  const user                      = await requireUser()
-  const supabase                  = await createClient()
+  const user = await requireUser()
+  const supabase = await createClient()
 
   // Fetch full course structure
   const { data: course } = await supabase
     .from('courses')
     .select('*, sections(*, lessons(*, attachments(*)), quiz:quizzes(*, quiz_questions(*)))')
     .eq('slug', courseSlug)
-    .single()
+    .single() as { data: any }
 
   if (!course) notFound()
 
@@ -32,7 +31,7 @@ export default async function LessonPage({
     .select('id, plans(*)')
     .eq('user_id', user.id)
     .eq('course_id', course.id)
-    .single()
+    .single() as { data: any }
 
   if (!enrollment) redirect(`/courses/${courseSlug}`)
 
@@ -65,7 +64,7 @@ export default async function LessonPage({
     }, {}
   )
 
-  const plan = (enrollment as { plans: { has_assignments: boolean } }).plans
+  const plan = enrollment.plans
 
   return (
     <div className="flex gap-0 -m-10">

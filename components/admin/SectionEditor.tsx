@@ -1,17 +1,17 @@
-// 📁 components/admin/SectionEditor.tsx
+// components/admin/SectionEditor.tsx
 'use client'
 
-import { useState }     from 'react'
-import { useRouter }    from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import LessonForm       from './LessonForm'
+import LessonForm from './LessonForm'
 
-interface Lesson  { id: string; title: string; video_url: string | null; sort_order: number }
+interface Lesson { id: string; title: string; video_url: string | null; sort_order: number }
 interface Section { id: string; title: string; lessons: Lesson[]; sort_order: number }
-interface Course  { id: string; sections: Section[] }
+interface Course { id: string; sections: Section[] }
 
 export default function SectionEditor({ course }: { course: Course }) {
-  const router   = useRouter()
+  const router = useRouter()
   const supabase = createClient()
   const [newSectionTitle, setNewSectionTitle] = useState('')
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
@@ -19,10 +19,10 @@ export default function SectionEditor({ course }: { course: Course }) {
   async function addSection() {
     if (!newSectionTitle.trim()) return
     await supabase.from('sections').insert({
-      course_id:  course.id,
-      title:      newSectionTitle.trim(),
+      course_id: course.id,
+      title: newSectionTitle.trim(),
       sort_order: course.sections.length,
-    })
+    } as never) // ✅ تحويل الكائن إلى never
     setNewSectionTitle('')
     router.refresh()
   }

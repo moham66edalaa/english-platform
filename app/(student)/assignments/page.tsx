@@ -1,14 +1,21 @@
-// 📁 app/(student)/assignments/page.tsx
-
-import { requireUser }  from '@/lib/auth/helpers'
+// app/(student)/assignments/page.tsx
+import { requireUser } from '@/lib/auth/helpers'
 import { createClient } from '@/lib/supabase/server'
-import { formatDate }   from '@/lib/utils'
-import Link             from 'next/link'
+import { formatDate } from '@/lib/utils'
+import Link from 'next/link'
 
 export const metadata = { title: 'Assignments — Eloquence' }
 
+// تعريف نوع بيانات التسليم (submission)
+interface Submission {
+  assignment_id: string
+  status: string
+  grade: number | null
+  feedback: string | null
+}
+
 export default async function AssignmentsPage() {
-  const user     = await requireUser()
+  const user = await requireUser()
   const supabase = await createClient()
 
   // Get enrolled courses with premium plan (assignments are premium-only)
@@ -31,11 +38,15 @@ export default async function AssignmentsPage() {
     .select('assignment_id, status, grade, feedback')
     .eq('user_id', user.id)
 
-  const submissionMap = (submissions ?? []).reduce(
-    (acc: Record<string, typeof submissions[0]>, s: typeof submissions[0]) => {
+  // تحويل البيانات إلى النوع المطلوب والتعامل مع null
+  const typedSubmissions = (submissions as Submission[]) ?? []
+
+  const submissionMap = typedSubmissions.reduce(
+    (acc: Record<string, Submission>, s: Submission) => {
       acc[s.assignment_id] = s
       return acc
-    }, {}
+    },
+    {}
   )
 
   return (
@@ -50,7 +61,7 @@ export default async function AssignmentsPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {(assignments ?? []).map((a: { id: string; title: string; description: string | null; due_date: string | null; courses: { title: string } }) => {
+          {(assignments ?? []).map((a: any) => {
             const sub = submissionMap[a.id]
             return (
               <div key={a.id}

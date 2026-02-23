@@ -1,37 +1,40 @@
-// 📁 components/admin/AssignmentReview.tsx
+// components/admin/AssignmentReview.tsx
 'use client'
 
-import { useState }     from 'react'
-import { useRouter }    from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { formatDate }   from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 
 interface Submission {
-  id:           string
-  status:       string
+  id: string
+  status: string
   content_text: string | null
-  content_url:  string | null
+  content_url: string | null
   submitted_at: string
-  grade:        number | null
-  feedback:     string | null
-  users:        { full_name: string | null; email: string }
-  assignments:  { title: string; courses: { title: string } }
+  grade: number | null
+  feedback: string | null
+  users: { full_name: string | null; email: string }
+  assignments: { title: string; courses: { title: string } }
 }
 
 export default function AssignmentReview({ submissions }: { submissions: Submission[] }) {
-  const router   = useRouter()
+  const router = useRouter()
   const supabase = createClient()
   const [feedbacks, setFeedbacks] = useState<Record<string, { feedback: string; grade: string }>>({})
 
   async function submitReview(id: string) {
     const data = feedbacks[id]
     if (!data?.feedback) return
-    await supabase.from('assignment_submissions').update({
-      feedback:    data.feedback,
-      grade:       data.grade ? parseInt(data.grade) : null,
-      status:      'reviewed',
-      reviewed_at: new Date().toISOString(),
-    }).eq('id', id)
+    await supabase
+      .from('assignment_submissions')
+      .update({
+        feedback: data.feedback,
+        grade: data.grade ? parseInt(data.grade) : null,
+        status: 'reviewed',
+        reviewed_at: new Date().toISOString(),
+      } as never) // استخدام as never بدلاً من as any
+      .eq('id', id)
     router.refresh()
   }
 

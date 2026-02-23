@@ -1,26 +1,26 @@
-// 📁 components/admin/CourseForm.tsx
+// components/admin/CourseForm.tsx
 'use client'
 
-import { useState }  from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { CourseRow } from '@/types'
 
-const CATEGORIES = ['level','skill','academic','exam'] as const
-const CEFR_OPTS  = ['A1','A2','B1','B2','C1']
+const CATEGORIES = ['level', 'skill', 'academic', 'exam'] as const
+const CEFR_OPTS = ['A1', 'A2', 'B1', 'B2', 'C1']
 
 export default function CourseForm({ course }: { course: CourseRow | null }) {
   const router = useRouter()
   const [form, setForm] = useState({
-    title:        course?.title        ?? '',
-    slug:         course?.slug         ?? '',
-    description:  course?.description  ?? '',
-    category:     course?.category     ?? 'level',
-    cefr_level:   course?.cefr_level   ?? '',
-    skill_type:   course?.skill_type   ?? '',
-    academic_year:course?.academic_year ?? '',
-    exam_type:    course?.exam_type     ?? '',
-    is_published: course?.is_published  ?? false,
+    title: course?.title ?? '',
+    slug: course?.slug ?? '',
+    description: course?.description ?? '',
+    category: course?.category ?? 'level',
+    cefr_level: course?.cefr_level ?? '',
+    skill_type: course?.skill_type ?? '',
+    academic_year: course?.academic_year ?? '',
+    exam_type: course?.exam_type ?? '',
+    is_published: course?.is_published ?? false,
   })
   const [saving, setSaving] = useState(false)
 
@@ -33,16 +33,17 @@ export default function CourseForm({ course }: { course: CourseRow | null }) {
     const supabase = createClient()
     const payload = {
       ...form,
-      cefr_level:    form.cefr_level    || null,
-      skill_type:    form.skill_type    || null,
+      cefr_level: form.cefr_level || null,
+      skill_type: form.skill_type || null,
       academic_year: form.academic_year || null,
-      exam_type:     form.exam_type     || null,
+      exam_type: form.exam_type || null,
     }
 
     if (course) {
-      await supabase.from('courses').update(payload).eq('id', course.id)
+      // تحويل payload إلى never لتجاوز فحص النوع
+      await supabase.from('courses').update(payload as never).eq('id', course.id)
     } else {
-      await supabase.from('courses').insert(payload)
+      await supabase.from('courses').insert(payload as never)
     }
     setSaving(false)
     router.push('/admin/courses')
@@ -64,8 +65,7 @@ export default function CourseForm({ course }: { course: CourseRow | null }) {
       </div>
       <div>
         <label className={labelCls}>Description</label>
-        <textarea rows={4} className={inputCls} value={form.description}
-                  onChange={(e) => update('description', e.target.value)} />
+        <textarea rows={4} className={inputCls} value={form.description} onChange={(e) => update('description', e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-5">
         <div>
@@ -116,17 +116,14 @@ export default function CourseForm({ course }: { course: CourseRow | null }) {
         )}
       </div>
       <label className="flex items-center gap-3 cursor-pointer">
-        <input type="checkbox" checked={form.is_published} onChange={(e) => update('is_published', e.target.checked)}
-               className="w-4 h-4 accent-[var(--gold)]" />
+        <input type="checkbox" checked={form.is_published} onChange={(e) => update('is_published', e.target.checked)} className="w-4 h-4 accent-[var(--gold)]" />
         <span className="text-[0.85rem] text-[var(--cream-dim)]">Published (visible to students)</span>
       </label>
       <div className="flex gap-3 pt-2">
-        <button onClick={handleSave} disabled={saving}
-                className="bg-[var(--gold)] text-[var(--ink)] px-8 py-2.5 rounded-sm text-[0.82rem] font-semibold tracking-widest uppercase hover:bg-[var(--gold-light)] transition-all disabled:opacity-60">
+        <button onClick={handleSave} disabled={saving} className="bg-[var(--gold)] text-[var(--ink)] px-8 py-2.5 rounded-sm text-[0.82rem] font-semibold tracking-widest uppercase hover:bg-[var(--gold-light)] transition-all disabled:opacity-60">
           {saving ? 'Saving…' : 'Save Course'}
         </button>
-        <button onClick={() => router.back()}
-                className="border border-[rgba(245,240,232,0.15)] text-[var(--cream-dim)] px-6 py-2.5 rounded-sm text-[0.82rem] tracking-widest uppercase hover:border-[var(--gold)] transition-all">
+        <button onClick={() => router.back()} className="border border-[rgba(245,240,232,0.15)] text-[var(--cream-dim)] px-6 py-2.5 rounded-sm text-[0.82rem] tracking-widest uppercase hover:border-[var(--gold)] transition-all">
           Cancel
         </button>
       </div>

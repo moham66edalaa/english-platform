@@ -5,11 +5,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { User } from '@supabase/supabase-js' // استيراد نوع User
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null) // تحديد النوع
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 

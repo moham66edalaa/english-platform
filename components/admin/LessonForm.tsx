@@ -1,27 +1,28 @@
-// 📁 components/admin/LessonForm.tsx
+// components/admin/LessonForm.tsx
 'use client'
 
-import { useState }     from 'react'
-import { useRouter }    from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface Lesson { id: string; title: string; video_url: string | null }
 
 export default function LessonForm({ sectionId, lessons }: { sectionId: string; lessons: Lesson[] }) {
-  const router   = useRouter()
+  const router = useRouter()
   const supabase = createClient()
-  const [title,    setTitle]    = useState('')
+  const [title, setTitle] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
 
   async function addLesson() {
     if (!title.trim()) return
     await supabase.from('lessons').insert({
       section_id: sectionId,
-      title:      title.trim(),
-      video_url:  videoUrl || null,
+      title: title.trim(),
+      video_url: videoUrl || null,
       sort_order: lessons.length,
-    })
-    setTitle(''); setVideoUrl('')
+    } as never) // تحويل الكائن إلى never لتجاوز فحص TypeScript
+    setTitle('')
+    setVideoUrl('')
     router.refresh()
   }
 

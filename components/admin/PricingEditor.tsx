@@ -1,8 +1,8 @@
-// 📁 components/admin/PricingEditor.tsx
+// components/admin/PricingEditor.tsx
 'use client'
 
-import { useState }     from 'react'
-import { useRouter }    from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { PlanRow } from '@/types'
 
@@ -10,25 +10,25 @@ const PLAN_NAMES = ['standard', 'premium'] as const
 
 const PLAN_FEATURES: Record<string, { key: keyof PlanRow; label: string }[]> = {
   standard: [
-    { key: 'has_videos',            label: 'Videos'            },
-    { key: 'has_pdfs',              label: 'PDFs'              },
-    { key: 'has_quizzes',           label: 'Quizzes'           },
+    { key: 'has_videos', label: 'Videos' },
+    { key: 'has_pdfs', label: 'PDFs' },
+    { key: 'has_quizzes', label: 'Quizzes' },
     { key: 'has_progress_tracking', label: 'Progress tracking' },
-    { key: 'has_certificate',       label: 'Certificate'       },
+    { key: 'has_certificate', label: 'Certificate' },
   ],
   premium: [
-    { key: 'has_assignments',         label: 'Assignments'         },
+    { key: 'has_assignments', label: 'Assignments' },
     { key: 'has_instructor_feedback', label: 'Instructor feedback' },
-    { key: 'has_live_sessions',       label: 'Live sessions'       },
-    { key: 'has_private_group',       label: 'Private group'       },
-    { key: 'has_study_plan',          label: 'Study plan'          },
+    { key: 'has_live_sessions', label: 'Live sessions' },
+    { key: 'has_private_group', label: 'Private group' },
+    { key: 'has_study_plan', label: 'Study plan' },
   ],
 }
 
 export default function PricingEditor({ courseId, plans }: { courseId: string; plans: PlanRow[] }) {
-  const router   = useRouter()
+  const router = useRouter()
   const supabase = createClient()
-  const [prices,  setPrices]  = useState<Record<string, string>>(
+  const [prices, setPrices] = useState<Record<string, string>>(
     Object.fromEntries(plans.map((p) => [p.name, String(p.price_usd)]))
   )
   const [saving, setSaving] = useState(false)
@@ -37,26 +37,31 @@ export default function PricingEditor({ courseId, plans }: { courseId: string; p
     setSaving(true)
     for (const planName of PLAN_NAMES) {
       const existing = plans.find((p) => p.name === planName)
-      const price    = parseFloat(prices[planName] ?? '0')
+      const price = parseFloat(prices[planName] ?? '0') || 0
 
       if (existing) {
-        await supabase.from('plans').update({ price_usd: price }).eq('id', existing.id)
+        await supabase
+          .from('plans')
+          .update({ price_usd: price } as never)
+          .eq('id', existing.id)
       } else {
-        await supabase.from('plans').insert({
-          course_id:               courseId,
-          name:                    planName,
-          price_usd:               price,
-          has_videos:              true,
-          has_pdfs:                true,
-          has_quizzes:             true,
-          has_progress_tracking:   true,
-          has_certificate:         true,
-          has_assignments:         planName === 'premium',
-          has_instructor_feedback: planName === 'premium',
-          has_live_sessions:       planName === 'premium',
-          has_private_group:       planName === 'premium',
-          has_study_plan:          planName === 'premium',
-        })
+        await supabase
+          .from('plans')
+          .insert({
+            course_id: courseId,
+            name: planName,
+            price_usd: price,
+            has_videos: true,
+            has_pdfs: true,
+            has_quizzes: true,
+            has_progress_tracking: true,
+            has_certificate: true,
+            has_assignments: planName === 'premium',
+            has_instructor_feedback: planName === 'premium',
+            has_live_sessions: planName === 'premium',
+            has_private_group: planName === 'premium',
+            has_study_plan: planName === 'premium',
+          } as never)
       }
     }
     setSaving(false)

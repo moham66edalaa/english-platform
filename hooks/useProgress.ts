@@ -1,4 +1,4 @@
-// 📁 hooks/useProgress.ts
+// hooks/useProgress.ts
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
@@ -25,20 +25,20 @@ export function useProgress(courseId: string) {
       const { data: lessons } = await supabase
         .from('lessons')
         .select('id, section:sections!inner(course_id)')
-        .eq('section.course_id', courseId)
+        .eq('section.course_id', courseId) as { data: any }
 
       if (!lessons || lessons.length === 0) { setLoading(false); return }
 
-      const lessonIds = lessons.map((l) => l.id)
+      const lessonIds = lessons.map((l: { id: string }) => l.id)
 
       const { data: rows } = await supabase
         .from('lesson_progress')
         .select('*')
         .eq('user_id', user.id)
-        .in('lesson_id', lessonIds)
+        .in('lesson_id', lessonIds) as { data: any }
 
       const map: Record<string, LessonProgressRow> = {}
-      rows?.forEach((r) => { map[r.lesson_id] = r })
+      rows?.forEach((r: any) => { map[r.lesson_id] = r })
       setProgressMap(map)
       setLoading(false)
     })

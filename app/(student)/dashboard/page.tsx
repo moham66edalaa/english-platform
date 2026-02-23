@@ -1,16 +1,15 @@
-// 📁 app/(student)/dashboard/page.tsx
-
-import { requireUser }       from '@/lib/auth/helpers'
-import { createClient }      from '@/lib/supabase/server'
-import { computeProgress }   from '@/lib/utils'
-import PlacementBanner       from '@/components/dashboard/PlacementBanner'
-import ContinueWatching      from '@/components/dashboard/ContinueWatching'
-import EnrolledCourseCard    from '@/components/dashboard/EnrolledCourseCard'
+// app/(student)/dashboard/page.tsx
+import { requireUser } from '@/lib/auth/helpers'
+import { createClient } from '@/lib/supabase/server'
+import { computeProgress } from '@/lib/utils'
+import PlacementBanner from '@/components/dashboard/PlacementBanner'
+import ContinueWatching from '@/components/dashboard/ContinueWatching'
+import EnrolledCourseCard from '@/components/dashboard/EnrolledCourseCard'
 
 export const metadata = { title: 'Dashboard — Eloquence' }
 
 export default async function DashboardPage() {
-  const user     = await requireUser()
+  const user = await requireUser()
   const supabase = await createClient()
 
   // Fetch enrollments with course + plan info
@@ -26,13 +25,13 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
 
   // Fetch total lessons per enrolled course
-  const courseIds = (enrollments ?? []).map((e: { courses: { id: string } }) => e.courses.id)
+  const courseIds = (enrollments ?? []).map((e: any) => e.courses.id)
   const { data: allLessons } = await supabase
     .from('lessons')
     .select('id, section_id, sections(course_id)')
     .in('sections.course_id', courseIds)
 
-  const completedIds = new Set((allProgress ?? []).filter((p: { completed: boolean }) => p.completed).map((p: { lesson_id: string }) => p.lesson_id))
+  const completedIds = new Set((allProgress ?? []).filter((p: any) => p.completed).map((p: any) => p.lesson_id))
 
   return (
     <div>
@@ -67,21 +66,20 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {(enrollments ?? []).map((enrollment: { courses: { id: string }; id: string; plans: unknown }) => {
+          {(enrollments ?? []).map((enrollment: any) => {
             const courseId = enrollment.courses.id
             const totalLessons = (allLessons ?? []).filter(
-              (l: { sections: { course_id: string } | null }) => l.sections?.course_id === courseId
+              (l: any) => l.sections?.course_id === courseId
             ).length
             const completedLessons = (allLessons ?? []).filter(
-              (l: { id: string; sections: { course_id: string } | null }) =>
-                l.sections?.course_id === courseId && completedIds.has(l.id)
+              (l: any) => l.sections?.course_id === courseId && completedIds.has(l.id)
             ).length
             const progress = computeProgress(totalLessons, completedLessons)
 
             return (
               <EnrolledCourseCard
                 key={enrollment.id}
-                enrollment={enrollment as Parameters<typeof EnrolledCourseCard>[0]['enrollment']}
+                enrollment={enrollment}
                 progress={progress}
               />
             )

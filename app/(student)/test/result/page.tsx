@@ -9,13 +9,14 @@ export default async function PlacementResultPage() {
   const user = await requireUser()
   const supabase = await createClient()
 
+  // Fetch result with type assertion
   const { data: result } = await supabase
     .from('placement_test_results')
     .select('*')
     .eq('user_id', user.id)
     .order('taken_at', { ascending: false })
     .limit(1)
-    .single()
+    .single() as { data: any }
 
   const recommendedSlug = result?.assigned_level
     ? CEFR_TO_COURSE_SLUG[result.assigned_level as keyof typeof CEFR_TO_COURSE_SLUG]
@@ -27,7 +28,6 @@ export default async function PlacementResultPage() {
 
   return (
     <div className="relative flex flex-col min-h-full bg-[var(--ink)] overflow-hidden">
-      {/* طبقات التوهج الذهبي الخلفية */}
       <div className="absolute inset-0 pointer-events-none">
         <div
           className="absolute rounded-full"
@@ -64,8 +64,7 @@ export default async function PlacementResultPage() {
         />
       </div>
 
-      {/* المحتوى الرئيسي - مسافة علوية pt-40 (قابلة للتعديل) */}
-      <div className="relative z-10 flex-1 px-4 pt-40">
+      <div className="relative z-10 flex-1 px-4">
         <div className="max-w-[800px] mx-auto">
           <CEFRResult
             result={result}

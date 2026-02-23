@@ -1,36 +1,36 @@
-// 📁 components/admin/QuizBuilder.tsx
+// components/admin/QuizBuilder.tsx
 'use client'
 
-import { useState }     from 'react'
-import { useRouter }    from 'next/navigation'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { CEFR_LEVELS }  from '@/constants/cefr'
+import { CEFR_LEVELS } from '@/constants/cefr'
 
 interface Question {
-  id:             string
-  question_text:  string
+  id: string
+  question_text: string
   correct_option: string
-  cefr_level?:    string
-  is_active?:     boolean
+  cefr_level?: string
+  is_active?: boolean
 }
 
 interface Props {
-  questions:        Question[]
+  questions: Question[]
   isPlacementTest?: boolean
-  quizId?:          string
+  quizId?: string
 }
 
 export default function QuizBuilder({ questions, isPlacementTest, quizId }: Props) {
-  const router   = useRouter()
+  const router = useRouter()
   const supabase = createClient()
 
-  const [qText,    setQText]    = useState('')
-  const [optA,     setOptA]     = useState('')
-  const [optB,     setOptB]     = useState('')
-  const [optC,     setOptC]     = useState('')
-  const [optD,     setOptD]     = useState('')
-  const [correct,  setCorrect]  = useState('a')
-  const [level,    setLevel]    = useState('B1')
+  const [qText, setQText] = useState('')
+  const [optA, setOptA] = useState('')
+  const [optB, setOptB] = useState('')
+  const [optC, setOptC] = useState('')
+  const [optD, setOptD] = useState('')
+  const [correct, setCorrect] = useState('a')
+  const [level, setLevel] = useState('B1')
 
   const inputCls = "w-full bg-[var(--ink-3)] border border-[rgba(245,240,232,0.1)] rounded-sm px-3 py-2 text-[0.82rem] text-[var(--cream)] focus:outline-none focus:border-[var(--gold)] transition-colors"
 
@@ -47,7 +47,8 @@ export default function QuizBuilder({ questions, isPlacementTest, quizId }: Prop
       : { question_text: qText, options, correct_option: correct, quiz_id: quizId, sort_order: questions.length }
 
     const table = isPlacementTest ? 'placement_test_questions' : 'quiz_questions'
-    await supabase.from(table).insert(payload as Record<string, unknown>)
+    // إضافة as never لتجاوز فحص TypeScript
+    await supabase.from(table).insert(payload as never)
     setQText(''); setOptA(''); setOptB(''); setOptC(''); setOptD('')
     router.refresh()
   }

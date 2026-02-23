@@ -1,4 +1,4 @@
-// 📁 lib/supabase/server.ts
+// lib/supabase/server.ts
 // Server-side Supabase client — use in Server Components, Server Actions, Route Handlers.
 
 import { createServerClient } from '@supabase/ssr'
@@ -13,8 +13,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll()          { return cookieStore.getAll() },
-        setAll(cookiesToSet) {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet: any[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)

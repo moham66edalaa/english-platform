@@ -1,7 +1,14 @@
 // app/api/placement-test/submit/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { gradePlacementTest } from '@/lib/placement/grader'
+import { gradePlacementTest, type GraderResult } from '@/lib/placement/grader'
+import type { CEFRLevel } from '@/constants/cefr'
+
+interface Question {
+  id: string
+  correct_option: string
+  cefr_level: CEFRLevel
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -13,7 +20,6 @@ export async function POST(request: Request) {
 
   const { answers } = await request.json() as { answers: Record<string, string> }
 
-  // Fetch active questions with their correct answers and cefr levels
   const { data: questions, error: qError } = await supabase
     .from('placement_test_questions')
     .select('id, correct_option, cefr_level')
@@ -23,10 +29,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No questions found' }, { status: 400 })
   }
 
-  // Grade the test
-  const result = gradePlacementTest(answers, questions)
+  const typedQuestions = questions as Question[]
+  const result: GraderResult = gradePlacementTest(answers, typedQuestions)
 
-  // Save the result
+  // إدراج نتيجة الاختبار مع تحويل النوع
   await supabase.from('placement_test_results').insert({
     user_id: user.id,
     answers,
@@ -34,12 +40,12 @@ export async function POST(request: Request) {
     correct_answers: result.correctAnswers,
     score_by_level: result.scoreByLevel,
     assigned_level: result.assignedLevel,
-  })
+  } as never)
 
-  // Update the user's CEFR level
+  // تحديث مستوى المستخدم مع تحويل النوع
   await supabase
     .from('users')
-    .update({ cefr_level: result.assignedLevel })
+    .update({ cefr_level: result.assignedLevel } as never)
     .eq('id', user.id)
 
   return NextResponse.json({ level: result.assignedLevel })

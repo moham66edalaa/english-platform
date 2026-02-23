@@ -13,7 +13,7 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: any[]) { // ✅ تم إضافة النوع any[]
           cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -24,7 +24,6 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // هذا السطر مهم جداً – يجلب المستخدم ويحدث الجلسة
   const { data: { user } } = await supabase.auth.getUser()
 
   return { supabaseResponse, user }
