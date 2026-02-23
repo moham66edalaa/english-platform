@@ -1,5 +1,5 @@
 // 📁 middleware.ts
-// Protects /dashboard, /learn, /my-courses, /assignments, /certificates (student)
+// Protects /dashboard, /learn, /my-courses, /assignments, /certificates, /test (student)
 // and /admin/** (admin only).
 // Public routes (/, /courses, /placement-test, /login, /signup) are open.
 

@@ -1,15 +1,14 @@
-// 📁 app/(student)/layout.tsx
-
+// app/(student)/layout.tsx
 import { requireUser } from '@/lib/auth/helpers'
-import Sidebar         from '@/components/layout/Sidebar'
+import Navbar from '@/components/layout/Navbar'
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser()
 
   return (
-    <div className="flex min-h-screen bg-[var(--ink)]">
-      <Sidebar user={user} />
-      <main className="flex-1 ml-64 p-10 min-h-screen">
+    <div className="min-h-screen bg-[var(--ink)]">
+      <Navbar />
+      <main className="pt-40 pb-12 px-6 md:px-12 max-w-7xl mx-auto">
         {children}
       </main>
     </div>

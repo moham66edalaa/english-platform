@@ -1,130 +1,98 @@
-// 📁 components/landing/CourseCategories.tsx
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useReveal } from '@/hooks/useReveal'
-import { COURSES, COURSE_TABS, CourseTab, CoursePreview } from '@/constants/categories'
+
+type TabKey = 'level' | 'skill' | 'academic' | 'exam'
+
+const COURSES_DATA = {
+  level: [
+    { title: 'A1 — Beginner', desc: 'Build your first English foundations: alphabet, basic vocabulary, simple sentences.', tag: 'Level Course', price: '$49', level: 'A1' },
+    { title: 'A2 — Elementary', desc: 'Communicate in everyday situations, describe your background and surroundings.', tag: 'Level Course', price: '$49', level: 'A2' },
+    { title: 'B1 — Intermediate', desc: 'Handle most situations while travelling and produce simple connected text.', tag: 'Level Course', price: '$59', level: 'B1' },
+    { title: 'B2 — Upper-Intermediate', desc: 'Interact with fluency with native speakers on a wide range of topics.', tag: 'Level Course', price: '$69', level: 'B2' },
+    { title: 'C1 — Advanced', desc: 'Express ideas fluently and spontaneously without much obvious searching.', tag: 'Level Course', price: '$79', level: 'C1' },
+  ],
+  skill: [
+    { title: 'Grammar Mastery', desc: 'Zero in on the rules of English — from articles and tenses to complex clause structures.', tag: 'Skill Course', price: '$59', level: 'All' },
+    { title: 'Speaking Confidence', desc: 'Develop fluency, pronunciation, and the ability to think in English — not translate.', tag: 'Skill Course', price: '$59', level: 'All' },
+  ],
+  academic: [
+    { title: '1st Secondary English', desc: 'Full curriculum aligned with national standards for first-year secondary students.', tag: 'Academic', price: '$49', level: 'B1' },
+    { title: '2nd Secondary English', desc: 'Comprehensive second-year coverage including advanced grammar and essay writing.', tag: 'Academic', price: '$49', level: 'B1' },
+    { title: '3rd Secondary English', desc: 'Exam-focused preparation for final secondary English with past-paper practice.', tag: 'Academic', price: '$49', level: 'B2' },
+  ],
+  exam: [
+    { title: 'IELTS Preparation', desc: 'Band 6–8 target. Full reading, writing, listening, and speaking modules with timed practice.', tag: 'Exam Prep', price: '$89', level: 'B2–C1' },
+    { title: 'TOEFL Preparation', desc: 'Comprehensive iBT practice — integrated tasks, academic reading, and lecture summaries.', tag: 'Exam Prep', price: '$89', level: 'B2–C1' },
+  ],
+}
 
 export default function CourseCategories() {
-  const [activeTab, setActiveTab] = useState<CourseTab>('level')
-  const headerRef = useReveal()
+  const [activeTab, setActiveTab] = useState<TabKey>('level')
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+
+    const elements = sectionRef.current?.querySelectorAll('.reveal')
+    elements?.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [])
 
   return (
-    <section id="courses" className="py-28 px-12 bg-[var(--ink-2)]">
-      <div className="max-w-[1200px] mx-auto">
-
-        {/* Header */}
-        <div ref={headerRef} className="reveal mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-6 h-px bg-[var(--gold)]" />
-            <span className="text-[0.7rem] font-semibold tracking-[0.2em] uppercase text-[var(--gold)]">
-              Our Curriculum
-            </span>
-          </div>
-          <h2
-            className="font-light leading-[1.15]"
-            style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2.2rem, 4vw, 3.5rem)' }}
-          >
-            Every path to <em className="italic text-[var(--gold)]">English mastery</em>
-          </h2>
-        </div>
-
-        {/* Tab nav */}
-        <div className="flex border-b border-[rgba(245,240,232,0.1)] mb-10 overflow-x-auto">
-          {COURSE_TABS.map((tab) => (
+    <section className="courses" id="courses" ref={sectionRef}>
+      <div className="container">
+        <div className="section-label reveal">Our Curriculum</div>
+        <h2 className="section-headline reveal" style={{ marginBottom: '2.5rem' }}>
+          Every path to <em>English mastery</em>
+        </h2>
+        <div className="tab-nav">
+          {(['level', 'skill', 'academic', 'exam'] as const).map((tab) => (
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={[
-                'px-7 py-4 text-[0.78rem] tracking-widest uppercase border-b-2 whitespace-nowrap transition-all bg-transparent cursor-pointer',
-                activeTab === tab.key
-                  ? 'text-[var(--gold)] border-[var(--gold)]'
-                  : 'text-[var(--muted)] border-transparent hover:text-[var(--cream)]',
-              ].join(' ')}
+              key={tab}
+              className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
             >
-              {tab.label}
+              {tab === 'level' ? 'By Level' : tab === 'skill' ? 'By Skill' : tab === 'academic' ? 'Academic' : 'Exam Prep'}
             </button>
           ))}
         </div>
-
-        {/* Course grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {COURSES[activeTab].map((course) => (
-            <CourseCard key={course.slug} course={course} />
+        <div className="course-grid">
+          {COURSES_DATA[activeTab].map((course) => (
+            <div key={course.title} className="course-card">
+              <div className="course-thumb">
+                <div className="course-thumb-inner">{course.level}</div>
+              </div>
+              <div className="course-body">
+                <div className="course-tag">{course.tag}</div>
+                <div className="course-title">{course.title}</div>
+                <p className="course-desc">{course.desc}</p>
+                <div className="course-footer">
+                  <div className="course-price">{course.price}</div>
+                  <Link href="#" className="course-link">
+                    View Course
+                    <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 6h10M7 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
           ))}
-        </div>
-
-        {/* View all CTA */}
-        <div className="text-center mt-12">
-          <Link
-            href="/courses"
-            className="inline-block border border-[rgba(245,240,232,0.15)] text-[var(--cream-dim)] px-8 py-3 rounded-sm text-[0.82rem] tracking-widest uppercase hover:border-[var(--gold)] hover:text-[var(--gold)] transition-all"
-          >
-            View All Courses →
-          </Link>
         </div>
       </div>
     </section>
-  )
-}
-
-/* ── Sub-component: individual course card ── */
-function CourseCard({ course }: { course: CoursePreview }) {
-  return (
-    <Link
-      href={`/courses/${course.slug}`}
-      className="group block bg-[var(--ink)] border border-[rgba(245,240,232,0.07)] rounded-sm overflow-hidden hover:border-[rgba(201,168,76,0.3)] hover:-translate-y-1.5 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition-all duration-300"
-    >
-      {/* Thumbnail */}
-      <div className="h-40 bg-[var(--ink-3)] flex items-center justify-center relative overflow-hidden">
-        <span
-          className="font-semibold relative z-10"
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: '4rem',
-            background: 'linear-gradient(135deg,#c9a84c,#e8cc80,#c9a84c)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          {course.badge}
-        </span>
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(13,15,20,0.8)]" />
-      </div>
-
-      {/* Body */}
-      <div className="p-6">
-        <p className="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--gold)] mb-2">
-          {course.tag}
-        </p>
-        <h3
-          className="text-[1.2rem] font-semibold leading-snug mb-2"
-          style={{ fontFamily: "'Cormorant Garamond', serif" }}
-        >
-          {course.title}
-        </h3>
-        <p className="text-[0.82rem] text-[var(--muted)] leading-relaxed mb-4">
-          {course.desc}
-        </p>
-
-        <div className="flex items-center justify-between pt-4 border-t border-[rgba(245,240,232,0.07)]">
-          <span
-            className="text-[1.25rem] font-semibold text-[var(--gold)]"
-            style={{ fontFamily: "'Cormorant Garamond', serif" }}
-          >
-            {course.price}
-          </span>
-          <span className="flex items-center gap-1.5 text-[0.7rem] tracking-widest uppercase text-[var(--cream-dim)] group-hover:text-[var(--gold)] transition-colors">
-            View Course
-            <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3 group-hover:translate-x-0.5 transition-transform">
-              <path d="M1 6h10M7 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-        </div>
-      </div>
-    </Link>
   )
 }

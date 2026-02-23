@@ -1,35 +1,51 @@
-// 📁 components/placement/PlacementQuestion.tsx
-
-import type { PlacementQuestion } from '@/types'
-import type { QuizOption }         from '@/types'
+// components/placement/PlacementQuestion.tsx
+'use client'
 
 interface Props {
-  question:       PlacementQuestion
+  question: {
+    id: string
+    question_text: string
+    options: Array<{ id: string; text: string }> // مصفوفة الخيارات من JSONB
+  }
   selectedOption: string | null
-  onSelect:       (optionId: string) => void
+  onSelect: (optionId: string) => void
+  questionNumber: number
+  totalQuestions: number
 }
 
-export default function PlacementQuestion({ question, selectedOption, onSelect }: Props) {
+export default function PlacementQuestion({
+  question,
+  selectedOption,
+  onSelect,
+  questionNumber,
+  totalQuestions,
+}: Props) {
   return (
-    <div className="bg-[var(--ink-2)] border border-[rgba(245,240,232,0.07)] rounded-sm p-6">
-      <p className="font-medium text-[1rem] mb-5 leading-relaxed text-[var(--cream)]">
-        {question.question_text}
-      </p>
-      <div className="flex flex-col gap-2.5">
-        {(question.options as QuizOption[]).map((opt) => (
+    <div className="bg-[var(--ink-2)] border border-[rgba(201,168,76,0.2)] rounded-2xl p-8 shadow-xl">
+      <div className="mb-6">
+        <span className="text-sm text-[var(--gold)]">
+          Question {questionNumber} of {totalQuestions}
+        </span>
+        <h2 className="text-xl font-light text-[var(--cream)] mt-2">
+          {question.question_text}
+        </h2>
+      </div>
+
+      <div className="space-y-3">
+        {question.options.map((opt) => (
           <button
             key={opt.id}
             onClick={() => onSelect(opt.id)}
-            className={[
-              'flex items-center gap-3 px-4 py-3.5 rounded-sm border text-left text-[0.88rem] transition-all',
-              selectedOption === opt.id
-                ? 'border-[var(--gold)] bg-[rgba(201,168,76,0.1)] text-[var(--cream)]'
-                : 'border-[rgba(245,240,232,0.1)] text-[var(--cream-dim)] hover:border-[rgba(201,168,76,0.3)] hover:text-[var(--cream)]',
-            ].join(' ')}
+            className={`
+              w-full text-left px-5 py-4 rounded-xl border transition-all
+              ${
+                selectedOption === opt.id
+                  ? 'border-[var(--gold)] bg-[rgba(201,168,76,0.1)] text-[var(--gold)]'
+                  : 'border-[rgba(245,240,232,0.1)] bg-[var(--ink-3)] text-[var(--cream)] hover:border-[rgba(201,168,76,0.3)]'
+              }
+            `}
           >
-            <span className="w-7 h-7 rounded-sm border border-current flex items-center justify-center text-[0.72rem] font-semibold flex-shrink-0">
-              {opt.id.toUpperCase()}
-            </span>
+            <span className="font-medium mr-3">{opt.id.toUpperCase()}.</span>
             {opt.text}
           </button>
         ))}

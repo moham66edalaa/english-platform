@@ -1,87 +1,69 @@
-// 📁 components/landing/HowItWorks.tsx
 'use client'
 
-import { useReveal } from '@/hooks/useReveal'
+import { useEffect, useRef } from 'react'
 
 const STEPS = [
   {
-    num:   '01',
+    num: '01',
     title: 'Take the Placement Test',
-    desc:  '30 MCQ questions auto-graded to find your exact CEFR level in under 15 minutes.',
+    desc: '30 MCQ questions auto-graded to find your exact CEFR level in under 15 minutes.',
   },
   {
-    num:   '02',
+    num: '02',
     title: 'Get Your Course Match',
-    desc:  'Automatically redirected to the course built precisely for your current level and goals.',
+    desc: 'Automatically redirected to the course built precisely for your current level and goals.',
   },
   {
-    num:   '03',
+    num: '03',
     title: 'Learn at Your Pace',
-    desc:  'Video lessons, PDFs, quizzes, and live sessions structured across clear learning sections.',
+    desc: 'Video lessons, PDFs, quizzes, and live sessions structured across clear learning sections.',
   },
   {
-    num:   '04',
+    num: '04',
     title: 'Earn Your Certificate',
-    desc:  'Complete your course and receive a verified certificate of completion to share anywhere.',
+    desc: 'Complete your course, receive a verified certificate of completion to share anywhere.',
   },
 ]
 
 export default function HowItWorks() {
-  const headerRef = useReveal()
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+
+    const elements = sectionRef.current?.querySelectorAll('.reveal')
+    elements?.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [])
 
   return (
-    <section className="py-28 px-12 bg-[var(--ink-2)]">
-      <div className="max-w-[1200px] mx-auto">
-
-        {/* Header */}
-        <div ref={headerRef} className="reveal mb-16">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-6 h-px bg-[var(--gold)]" />
-            <span className="text-[0.7rem] font-semibold tracking-[0.2em] uppercase text-[var(--gold)]">
-              How It Works
-            </span>
-          </div>
-          <h2
-            className="font-light leading-[1.15]"
-            style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(2.2rem, 4vw, 3.5rem)' }}
-          >
-            Four steps to <em className="italic text-[var(--gold)]">fluency</em>
-          </h2>
-        </div>
-
-        {/* Steps grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 relative">
-          {/* Decorative connector line — desktop only */}
-          <div
-            className="hidden lg:block absolute top-6 h-px pointer-events-none"
-            style={{
-              left: '15%', right: '15%',
-              background: 'linear-gradient(90deg, transparent, var(--gold-dim), transparent)',
-            }}
-          />
-
-          {STEPS.map((step, i) => (
-            <Step key={step.num} step={step} index={i} />
+    <section className="how" ref={sectionRef}>
+      <div className="container">
+        <div className="section-label reveal">How It Works</div>
+        <h2 className="section-headline reveal">
+          Four steps to <em>fluency</em>
+        </h2>
+        <div className="steps">
+          {STEPS.map((step, index) => (
+            <div key={step.num} className="step reveal">
+              <div className="step-num">{step.num}</div>
+              <div className="step-title">{step.title}</div>
+              <p className="step-desc">{step.desc}</p>
+            </div>
           ))}
         </div>
       </div>
     </section>
-  )
-}
-
-function Step({ step, index }: { step: (typeof STEPS)[0]; index: number }) {
-  const ref = useReveal(index * 120)
-  return (
-    <div ref={ref} className="reveal text-center relative z-10">
-      <div className="w-12 h-12 rounded-full border border-[rgba(201,168,76,0.4)] bg-[var(--ink)] flex items-center justify-center mx-auto mb-5 text-[var(--gold)] font-semibold"
-           style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.25rem' }}>
-        {step.num}
-      </div>
-      <h3 className="font-semibold mb-2 text-[1.2rem]"
-          style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-        {step.title}
-      </h3>
-      <p className="text-[0.82rem] text-[var(--muted)] leading-relaxed">{step.desc}</p>
-    </div>
   )
 }

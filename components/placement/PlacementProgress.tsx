@@ -1,9 +1,10 @@
-// 📁 components/placement/PlacementProgress.tsx
+// components/placement/PlacementProgress.tsx
+'use client'
 
 interface Props {
-  current:   number
-  total:     number
-  answers:   Record<string, string>
+  current: number
+  total: number
+  answers: Record<string, string>
   questions: { id: string }[]
 }
 
