@@ -1,6 +1,5 @@
-// app/api/payments/webhook/route.ts
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/payments/stripe'
+import { getStripe } from '@/lib/payments/stripe'
 import { createClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 
@@ -8,9 +7,21 @@ export async function POST(request: Request) {
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')!
 
+  const stripe = getStripe()
+  if (!stripe) {
+    return NextResponse.json(
+      { error: 'Stripe is not configured' },
+      { status: 500 }
+    )
+  }
+
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    )
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
@@ -19,22 +30,38 @@ export async function POST(request: Request) {
     const session = event.data.object as Stripe.Checkout.Session
     const { planId, userId } = session.metadata ?? {}
 
-    if (!planId || !userId) return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
+    if (!planId || !userId) {
+      return NextResponse.json({ error: 'Missing metadata' }, { status: 400 })
+    }
 
     const supabase = await createClient()
 
-    // Fetch plan → get course_id
-    const { data: plan } = await supabase.from('plans').select('id, course_id').eq('id', planId).single() as { data: any }
-    if (!plan) return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+    // جلب الخطة
+    const { data: plan } = (await supabase
+      .from('plans')
+      .select('id, course_id')
+      .eq('id', planId)
+      .single()) as { data: any }
 
-    // Create enrollment with type assertion
-    const { data: enrollment } = await supabase
+    if (!plan) {
+      return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
+    }
+
+    // إنشاء أو تحديث التسجيل
+    const { data: enrollment } = (await supabase
       .from('enrollments')
-      .upsert({ user_id: userId, course_id: plan.course_id, plan_id: plan.id } as any, { onConflict: 'user_id,course_id' })
+      .upsert(
+        {
+          user_id: userId,
+          course_id: plan.course_id,
+          plan_id: plan.id,
+        } as any,
+        { onConflict: 'user_id,course_id' }
+      )
       .select()
-      .single() as { data: any }
+      .single()) as { data: any }
 
-    // Record payment with type assertion if needed
+    // تسجيل الدفعة
     await supabase.from('payments').insert({
       user_id: userId,
       enrollment_id: enrollment?.id ?? null,
