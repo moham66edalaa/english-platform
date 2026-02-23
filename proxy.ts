@@ -9,7 +9,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 const STUDENT_PATHS = ['/dashboard', '/learn', '/my-courses', '/assignments', '/certificates', '/test']
 const ADMIN_PATHS   = ['/admin']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request)
   const { pathname } = request.nextUrl
 
