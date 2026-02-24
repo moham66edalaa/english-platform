@@ -1,15 +1,21 @@
-// 📁 app/(admin)/layout.tsx
-
-import { requireUser }  from '@/lib/auth/helpers'
+// app/(admin)/layout.tsx
+import { requireAdmin } from '@/lib/auth/helpers'
 import AdminSidebar     from '@/components/layout/AdminSidebar'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireUser()   // requireUser + role check also happens in middleware
+  await requireAdmin() // redirects to /dashboard if not admin
 
   return (
-    <div className="flex min-h-screen bg-[var(--ink)]">
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0d0f14' }}>
       <AdminSidebar />
-      <main className="flex-1 ml-64 p-10 min-h-screen">
+      <main style={{
+        flex: 1,
+        marginLeft: '210px',
+        minHeight: '100vh',
+        padding: '40px 40px',
+        backgroundColor: '#0d0f14',
+        color: '#f5f0e8',
+      }}>
         {children}
       </main>
     </div>
