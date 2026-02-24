@@ -32,7 +32,7 @@ export default function Progress({
         </div>
       )}
       <div
-        className="w-full bg-[var(--ink-3)] rounded-sm overflow-hidden"
+        className="w-full bg-[var(--ink-3)] rounded-full overflow-hidden"
         style={{ height }}
         role="progressbar"
         aria-valuenow={clamped}
@@ -40,7 +40,7 @@ export default function Progress({
         aria-valuemax={100}
       >
         <div
-          className="h-full rounded-sm transition-[width] duration-700 ease-out"
+          className="h-full rounded-full transition-[width] duration-700 ease-out"
           style={{
             width: `${clamped}%`,
             background: 'linear-gradient(135deg, #c9a84c, #e8cc80, #c9a84c)',

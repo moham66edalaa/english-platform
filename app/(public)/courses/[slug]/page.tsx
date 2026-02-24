@@ -8,12 +8,12 @@ import PlanSelector from '@/components/courses/PlanSelector'
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const supabase = await createClient()
-
+  // تحويل النوع إلى any
   const { data } = await supabase
     .from('courses')
     .select('title')
     .eq('slug', slug)
-    .single() as { data: { title: string } | null }
+    .single() as { data: any }
 
   return { title: data ? `${data.title} — Eloquence` : 'Course — Eloquence' }
 }
@@ -23,7 +23,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   const supabase = await createClient()
   const user = await getUser()
 
-  // جلب بيانات الكورس مع العلاقات، وتحويل النوع إلى any مؤقتاً
+  // جلب بيانات الكورس مع تحويل النوع
   const { data: course } = await supabase
     .from('courses')
     .select(`*, plans(*), sections(*, lessons(*, attachments(*)))`)
@@ -33,7 +33,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
 
   if (!course) notFound()
 
-  // التحقق من التسجيل
+  // التحقق من التسجيل مع تحويل النوع
   let enrollment = null
   if (user) {
     const { data } = await supabase
@@ -70,6 +70,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             {course.description}
           </p>
 
+          {/* شارات إضافية */}
           <div className="flex flex-wrap gap-3 mb-10">
             {[
               `${totalLessons} lessons`,
@@ -86,6 +87,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             ))}
           </div>
 
+          {/* المنهج الدراسي */}
           <h2
             className="text-[1.5rem] font-semibold mb-5"
             style={{ fontFamily: "'Cormorant Garamond', serif" }}

@@ -17,11 +17,11 @@ const variantClasses: Record<BadgeVariant, string> = {
   outline: 'border border-[rgba(201,168,76,0.35)] text-[var(--gold)] bg-[rgba(201,168,76,0.06)]',
 }
 
-export default function Badge({ variant = 'outline', className, children, ...props }: BadgeProps) {
+export function Badge({ variant = 'outline', className, children, ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-sm text-[0.65rem] font-semibold tracking-[0.1em] uppercase whitespace-nowrap',
+        'inline-flex items-center px-3 py-1 rounded-full text-[0.65rem] font-semibold tracking-[0.1em] uppercase whitespace-nowrap',
         variantClasses[variant],
         className
       )}

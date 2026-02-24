@@ -51,7 +51,7 @@ export default function Modal({ open, onClose, title, children, className, size 
       {/* Panel */}
       <div
         className={cn(
-          'relative z-10 w-full bg-[var(--ink-2)] border border-[rgba(201,168,76,0.2)] rounded-sm shadow-[0_32px_80px_rgba(0,0,0,0.7)] overflow-hidden',
+          'relative z-10 w-full bg-[var(--ink-2)] border border-[rgba(201,168,76,0.2)] rounded-2xl shadow-[0_32px_80px_rgba(0,0,0,0.7)] overflow-hidden',
           sizeClasses[size],
           className
         )}

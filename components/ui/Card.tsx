@@ -16,7 +16,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'relative bg-[var(--ink-2)] border border-[rgba(245,240,232,0.08)] rounded-sm overflow-hidden transition-all duration-300',
+          'relative bg-[var(--ink-2)] border border-[rgba(245,240,232,0.08)] rounded-2xl overflow-hidden transition-all duration-300',
           !noPadding && 'p-6',
           className
         )}

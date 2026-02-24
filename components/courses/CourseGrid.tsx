@@ -1,5 +1,4 @@
 // 📁 components/courses/CourseGrid.tsx
-
 import CourseCard from './CourseCard'
 import type { CourseRow, PlanRow } from '@/types'
 
@@ -10,14 +9,24 @@ interface Props {
 export default function CourseGrid({ courses }: Props) {
   if (courses.length === 0) {
     return (
-      <div className="text-center py-16 text-[var(--muted)] text-[0.88rem]">
+      <div style={{
+        textAlign: 'center',
+        padding:   '4rem 0',
+        color:     '#6b7280',
+        fontSize:  '0.88rem',
+      }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.4 }}>◈</div>
         No courses found for the selected filters.
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+    <div style={{
+      display:             'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+      gap:                 '1.25rem',
+    }}>
       {courses.map((course) => (
         <CourseCard key={course.id} course={course} />
       ))}

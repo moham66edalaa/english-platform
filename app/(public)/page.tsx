@@ -9,7 +9,7 @@ import FinalCTA from '@/components/landing/FinalCTA'
 
 export default function Home() {
   return (
-    <main>
+    <>
       <Hero />
       <MarqueeStrip />
       <HowItWorks />
@@ -18,6 +18,6 @@ export default function Home() {
       <PricingPreview />
       <Testimonials />
       <FinalCTA />
-    </main>
+    </>
   )
 }

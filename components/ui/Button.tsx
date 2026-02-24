@@ -25,14 +25,14 @@ const sizeClasses: Record<Size, string> = {
   lg: 'px-9 py-3.5 text-[0.9rem]',
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', loading = false, className, children, disabled, ...props }, ref) => {
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-sm font-semibold tracking-wide uppercase transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
+          'inline-flex items-center justify-center gap-2 rounded-xl font-semibold tracking-wide uppercase transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
           variantClasses[variant],
           sizeClasses[size],
           className
