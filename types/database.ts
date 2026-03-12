@@ -5,7 +5,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1'
-export type UserRole = 'student' | 'admin'
+export type UserRole = 'student' | 'teacher' | 'owner'
 export type CourseCategory = 'level' | 'skill' | 'academic' | 'exam'
 export type PlanName = 'standard' | 'premium'
 export type PaymentStatus = 'pending' | 'completed' | 'refunded' | 'failed'
@@ -282,6 +282,103 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['live_sessions']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['live_sessions']['Insert']>
+      }
+
+      groups: {
+        Row: {
+          id:            string
+          name:          string
+          course_id:     string | null
+          teacher_id:    string | null
+          max_students:  number
+          schedule_note: string | null
+          is_active:     boolean
+          created_at:    string
+        }
+        Insert: Omit<Database['public']['Tables']['groups']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['groups']['Insert']>
+      }
+
+      group_members: {
+        Row: {
+          id:        string
+          group_id:  string
+          user_id:   string
+          joined_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['group_members']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['group_members']['Insert']>
+      }
+
+      teacher_courses: {
+        Row: {
+          id:          string
+          teacher_id:  string
+          course_id:   string
+          assigned_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['teacher_courses']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['teacher_courses']['Insert']>
+      }
+
+      attendance: {
+        Row: {
+          id:           string
+          group_id:     string
+          user_id:      string
+          session_date: string
+          status:       'present' | 'absent' | 'late' | 'excused'
+          notes:        string | null
+          recorded_by:  string | null
+          created_at:   string
+        }
+        Insert: Omit<Database['public']['Tables']['attendance']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['attendance']['Insert']>
+      }
+
+      announcements: {
+        Row: {
+          id:              string
+          author_id:       string
+          title:           string
+          body:            string
+          target_role:     'all' | 'student' | 'teacher' | null
+          target_group_id: string | null
+          is_pinned:       boolean
+          created_at:      string
+        }
+        Insert: Omit<Database['public']['Tables']['announcements']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['announcements']['Insert']>
+      }
+
+      scheduled_sessions: {
+        Row: {
+          id:            string
+          group_id:      string | null
+          teacher_id:    string
+          title:         string
+          day_of_week:   number | null
+          start_time:    string
+          end_time:      string
+          meeting_url:   string | null
+          is_recurring:  boolean
+          specific_date: string | null
+          is_active:     boolean
+          created_at:    string
+        }
+        Insert: Omit<Database['public']['Tables']['scheduled_sessions']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['scheduled_sessions']['Insert']>
+      }
+
+      platform_settings: {
+        Row: {
+          id:         string
+          key:        string
+          value:      string | null
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['platform_settings']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['platform_settings']['Insert']>
       }
     }
   }

@@ -22,10 +22,17 @@ export async function requireUser(): Promise<UserRow> {
   return profile
 }
 
-/** Like requireUser but also enforces admin role. */
-export async function requireAdmin(): Promise<UserRow> {
+/** Like requireUser but also enforces owner role. */
+export async function requireOwner(): Promise<UserRow> {
   const profile = await requireUser()
-  if (profile.role !== 'admin') redirect('/dashboard')
+  if (profile.role !== 'owner') redirect('/dashboard')
+  return profile
+}
+
+/** Like requireUser but enforces teacher or owner role. */
+export async function requireTeacher(): Promise<UserRow> {
+  const profile = await requireUser()
+  if (profile.role !== 'teacher' && profile.role !== 'owner') redirect('/dashboard')
   return profile
 }
 

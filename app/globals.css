@@ -114,8 +114,8 @@ body::before {
   }
 }
 
-/* Navbar styles (مطابقة للـ HTML) */
-nav {
+/* Navbar styles — scoped to public Navbar only (id="nav") */
+nav#nav {
   position: fixed;
   top: 0;
   left: 0;
@@ -128,7 +128,7 @@ nav {
   border-bottom: 1px solid transparent;
   transition: background 0.4s, border-color 0.4s, padding 0.3s;
 }
-nav.scrolled {
+nav#nav.scrolled {
   background: rgba(13, 15, 20, 0.92);
   backdrop-filter: blur(16px);
   border-color: rgba(201, 168, 76, 0.15);

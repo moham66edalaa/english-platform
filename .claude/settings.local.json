@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm --version)",
+      "Bash(where npm.cmd)",
+      "Bash(where npx.cmd)",
+      "Bash(where next:*)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Bash(echo \"EXIT:$?\")",
+      "Read(//c/vs codes/english-platform/$HOME/.claude/**)",
+      "Read(//c/vs codes/english-platform/$HOME/.claude/plugins/cache/feature-workflow-marketplace/feature-workflow/0.5.0/**)",
+      "Read(//c/vs codes/english-platform/$HOME/.claude/plugins/cache/feature-workflow-marketplace/feature-workflow/**)",
+      "Bash(npx tsx:*)",
+      "Bash(npx supabase:*)",
+      "Bash(ls -la \"C:\\\\vs codes\\\\english-platform/app/\\(owner\\)/owner/\")",
+      "Bash(ls -la \"C:\\\\vs codes\\\\english-platform/app/\\(teacher\\)/teacher/\")",
+      "Bash(cat \"C:/vs codes/english-platform/app/\\(teacher\\)/teacher/announcements/page.tsx\")",
+      "Bash(cat \"C:/vs codes/english-platform/app/\\(student\\)/results/page.tsx\")",
+      "Bash(cat \"C:/vs codes/english-platform/app/\\(student\\)/attendance/page.tsx\")",
+      "Bash(cat \"C:/vs codes/english-platform/app/\\(student\\)/profile/page.tsx\")"
+    ]
+  }
+}
