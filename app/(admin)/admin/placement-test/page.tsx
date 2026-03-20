@@ -1,11 +1,13 @@
-// 📁 app/(admin)/admin/placement-test/page.tsx
-
 import { createClient } from '@/lib/supabase/server'
 import QuizBuilder      from '@/components/admin/QuizBuilder'
 
-export const metadata = { title: 'Placement Test — Admin' }
+export const metadata = { title: 'Placement Test — Admin Panel | Eloquence' }
 
-export default async function PlacementTestAdminPage() {
+const serif = "'Cormorant Garamond', serif"
+const sans  = "'Raleway', sans-serif"
+const gold  = '#C9A84C'
+
+export default async function OwnerPlacementTestPage() {
   const supabase = await createClient()
 
   const { data: questions } = await supabase
@@ -14,14 +16,24 @@ export default async function PlacementTestAdminPage() {
     .order('sort_order')
 
   return (
-    <div>
-      <h1 className="font-light text-[2rem] mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-        Placement Test Questions
-      </h1>
-      <p className="text-[var(--muted)] text-[0.85rem] mb-8">
-        Manage the MCQ bank. Questions are grouped by CEFR level.
-      </p>
+    <div style={{ maxWidth: '1100px' }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: '36px' }}>
+        <p style={{ fontFamily: sans, fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: gold, marginBottom: '8px' }}>
+          Admin Panel
+        </p>
+        <h1 style={{ fontFamily: serif, fontWeight: 300, fontSize: '2.4rem', color: '#EAE4D2', marginBottom: '6px' }}>
+          Placement Test Questions
+        </h1>
+        <p style={{ fontFamily: sans, fontSize: '0.82rem', color: '#5E5A54' }}>
+          Manage the MCQ bank. Questions are grouped by CEFR level.
+        </p>
+      </div>
+
+      {/* Component */}
       <QuizBuilder questions={questions ?? []} isPlacementTest />
+
     </div>
   )
 }

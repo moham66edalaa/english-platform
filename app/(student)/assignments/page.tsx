@@ -1,12 +1,21 @@
-// app/(student)/assignments/page.tsx
 import { requireUser } from '@/lib/auth/helpers'
 import { createClient } from '@/lib/supabase/server'
-import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 
 export const metadata = { title: 'Assignments — Eloquence' }
 
-// تعريف نوع بيانات التسليم (submission)
+const serif = "'Cormorant Garamond', serif"
+const sans  = "'DM Sans', sans-serif"
+const teal  = '#4CC9A8'
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 interface Submission {
   assignment_id: string
   status: string
@@ -18,7 +27,6 @@ export default async function AssignmentsPage() {
   const user = await requireUser()
   const supabase = await createClient()
 
-  // Get enrolled courses with premium plan (assignments are premium-only)
   const { data: enrollments } = await supabase
     .from('enrollments')
     .select('course_id, plans!inner(has_assignments)')
@@ -38,7 +46,6 @@ export default async function AssignmentsPage() {
     .select('assignment_id, status, grade, feedback')
     .eq('user_id', user.id)
 
-  // تحويل البيانات إلى النوع المطلوب والتعامل مع null
   const typedSubmissions = (submissions as Submission[]) ?? []
 
   const submissionMap = typedSubmissions.reduce(
@@ -49,55 +56,216 @@ export default async function AssignmentsPage() {
     {}
   )
 
-  return (
-    <div>
-      <h1 className="font-light text-[2rem] mb-8" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-        Assignments
-      </h1>
+  const list = assignments ?? []
 
-      {(assignments ?? []).length === 0 ? (
-        <div className="bg-[var(--ink-2)] border border-[rgba(245,240,232,0.07)] rounded-sm p-12 text-center">
-          <p className="text-[var(--muted)]">No assignments yet — or upgrade to Premium to unlock them.</p>
+  return (
+    <div style={{ minHeight: '100vh' }}>
+      <style>{`
+        .assignment-card:hover {
+          border-color: rgba(76,201,168,0.3) !important;
+        }
+      `}</style>
+
+      {/* Page header */}
+      <div style={{ marginBottom: 40 }}>
+        <p style={{
+          fontFamily: sans,
+          fontSize: '0.62rem',
+          fontWeight: 600,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: teal,
+          marginBottom: 8,
+        }}>
+          Student
+        </p>
+        <h1 style={{
+          fontFamily: serif,
+          fontWeight: 300,
+          fontSize: '2.6rem',
+          color: '#EAE4D2',
+          margin: 0,
+          lineHeight: 1.15,
+        }}>
+          Assignments
+        </h1>
+        {list.length > 0 && (
+          <p style={{
+            fontFamily: sans,
+            fontSize: '0.85rem',
+            color: '#8A8278',
+            marginTop: 8,
+          }}>
+            {list.length} assignment{list.length !== 1 ? 's' : ''} available
+          </p>
+        )}
+      </div>
+
+      {list.length === 0 ? (
+        /* Empty state */
+        <div style={{
+          background: '#111110',
+          border: '1px solid rgba(245,240,232,0.07)',
+          borderRadius: 16,
+          padding: '64px 32px',
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            background: 'rgba(76,201,168,0.08)',
+            border: '1px solid rgba(76,201,168,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={teal} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <p style={{
+            fontFamily: sans,
+            fontSize: '0.92rem',
+            color: '#8A8278',
+          }}>
+            No assignments yet — upgrade to Premium to unlock them.
+          </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {(assignments ?? []).map((a: any) => {
+        /* Assignment list */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {list.map((a: any) => {
             const sub = submissionMap[a.id]
             return (
-              <div key={a.id}
-                   className="bg-[var(--ink-2)] border border-[rgba(245,240,232,0.07)] rounded-sm p-6 flex items-start justify-between gap-6 hover:border-[rgba(201,168,76,0.2)] transition-colors">
-                <div>
-                  <p className="text-[0.7rem] tracking-widest uppercase text-[var(--gold)] mb-1">
+              <div
+                key={a.id}
+                className="assignment-card"
+                style={{
+                  background: '#111110',
+                  border: '1px solid rgba(245,240,232,0.07)',
+                  borderRadius: 16,
+                  padding: 28,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: 24,
+                  transition: 'border-color 0.25s ease',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    fontFamily: sans,
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: teal,
+                    marginBottom: 8,
+                  }}>
                     {a.courses?.title}
                   </p>
-                  <h3 className="font-semibold text-[1.1rem] mb-1"
-                      style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+
+                  <h3 style={{
+                    fontFamily: serif,
+                    fontWeight: 600,
+                    fontSize: '1.15rem',
+                    color: '#EAE4D2',
+                    margin: '0 0 6px',
+                    lineHeight: 1.3,
+                  }}>
                     {a.title}
                   </h3>
+
                   {a.description && (
-                    <p className="text-[0.82rem] text-[var(--muted)] mb-2">{a.description}</p>
+                    <p style={{
+                      fontFamily: sans,
+                      fontSize: '0.82rem',
+                      color: '#8A8278',
+                      marginBottom: 8,
+                      lineHeight: 1.5,
+                    }}>
+                      {a.description}
+                    </p>
                   )}
+
                   {a.due_date && (
-                    <p className="text-[0.75rem] text-[var(--muted)]">Due: {formatDate(a.due_date)}</p>
+                    <p style={{
+                      fontFamily: sans,
+                      fontSize: '0.75rem',
+                      color: '#5E5A54',
+                    }}>
+                      Due: {formatDate(a.due_date)}
+                    </p>
                   )}
+
                   {sub?.feedback && (
-                    <p className="text-[0.82rem] text-[var(--cream-dim)] mt-2 border-l-2 border-[var(--gold)] pl-3">
+                    <p style={{
+                      fontFamily: sans,
+                      fontSize: '0.82rem',
+                      color: '#EAE4D2',
+                      marginTop: 14,
+                      borderLeft: `2px solid ${teal}`,
+                      paddingLeft: 14,
+                      lineHeight: 1.55,
+                    }}>
                       Feedback: {sub.feedback}
                     </p>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-3 flex-shrink-0">
+
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: 12,
+                  flexShrink: 0,
+                }}>
                   {sub ? (
-                    <span className={`text-[0.65rem] tracking-widest uppercase px-3 py-1 rounded-sm border ${
-                      sub.status === 'reviewed'
-                        ? 'bg-[rgba(34,197,94,0.1)] border-[rgba(34,197,94,0.3)] text-green-400'
-                        : 'bg-[rgba(201,168,76,0.1)] border-[rgba(201,168,76,0.3)] text-[var(--gold)]'
-                    }`}>
-                      {sub.status === 'reviewed' ? `Reviewed · ${sub.grade ?? '–'}/100` : 'Submitted'}
+                    <span style={{
+                      fontFamily: sans,
+                      fontSize: '0.62rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      padding: '5px 14px',
+                      borderRadius: 6,
+                      ...(sub.status === 'reviewed'
+                        ? {
+                            background: 'rgba(34,197,94,0.1)',
+                            border: '1px solid rgba(34,197,94,0.3)',
+                            color: '#4ade80',
+                          }
+                        : {
+                            background: 'rgba(76,201,168,0.08)',
+                            border: `1px solid rgba(76,201,168,0.3)`,
+                            color: teal,
+                          }),
+                    }}>
+                      {sub.status === 'reviewed' ? `Reviewed \u00B7 ${sub.grade ?? '\u2013'}/100` : 'Submitted'}
                     </span>
                   ) : (
-                    <Link href={`/assignments?submit=${a.id}`}
-                          className="bg-[var(--gold)] text-[var(--ink)] px-5 py-2 rounded-sm text-[0.75rem] font-semibold tracking-widest uppercase hover:bg-[var(--gold-light)] transition-all whitespace-nowrap">
+                    <Link
+                      href={`/assignments?submit=${a.id}`}
+                      style={{
+                        display: 'inline-block',
+                        background: `linear-gradient(135deg, ${teal}, #3db893)`,
+                        color: '#0d0f14',
+                        fontFamily: sans,
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.18em',
+                        textTransform: 'uppercase',
+                        padding: '9px 22px',
+                        borderRadius: 8,
+                        textDecoration: 'none',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       Submit
                     </Link>
                   )}

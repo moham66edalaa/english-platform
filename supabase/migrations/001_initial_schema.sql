@@ -17,7 +17,7 @@ create table public.users (
   full_name     text,
   avatar_url    text,
   role          text        not null default 'student'
-                            check (role in ('student', 'admin')),
+                            check (role in ('student', 'teacher', 'owner')),
   cefr_level    text        check (cefr_level in ('A1', 'A2', 'B1', 'B2', 'C1')),
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
@@ -314,20 +314,21 @@ create table public.live_sessions (
 alter table public.users enable row level security;
 create policy "users: read own row"   on public.users for select using (auth.uid() = id);
 create policy "users: update own row" on public.users for update using (auth.uid() = id);
-create policy "admin: read all users" on public.users for select
-  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "owner: read all users" on public.users for select
+  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'owner')
+    or id = auth.uid());
 
 -- Courses (public read for published, admin write)
 alter table public.courses enable row level security;
 create policy "courses: public read published" on public.courses for select using (is_published = true);
-create policy "courses: admin all"             on public.courses
-  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "courses: owner_teacher all"     on public.courses
+  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
 
 -- Plans (readable by everyone, writable by admin)
 alter table public.plans enable row level security;
 create policy "plans: public read"  on public.plans for select using (true);
-create policy "plans: admin write"  on public.plans
-  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "plans: owner_teacher write"  on public.plans
+  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
 
 -- Sections + Lessons + Attachments (readable if course is published)
 alter table public.sections    enable row level security;
@@ -348,9 +349,9 @@ create policy "attachments: read if enrolled" on public.attachments for select
   ));
 
 -- Admin write for sections, lessons, attachments
-create policy "sections: admin write"    on public.sections    using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
-create policy "lessons: admin write"     on public.lessons     using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
-create policy "attachments: admin write" on public.attachments using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "sections: owner_teacher write"    on public.sections    using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
+create policy "lessons: owner_teacher write"     on public.lessons     using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
+create policy "attachments: owner_teacher write" on public.attachments using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
 
 -- Quizzes
 alter table public.quizzes        enable row level security;
@@ -359,13 +360,13 @@ alter table public.quiz_attempts  enable row level security;
 create policy "quizzes: read if enrolled"  on public.quizzes        for select using (true);
 create policy "questions: read if enrolled" on public.quiz_questions for select using (true);
 create policy "attempts: own rows"          on public.quiz_attempts  using (auth.uid() = user_id);
-create policy "quizzes: admin write"        on public.quizzes        using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
-create policy "questions: admin write"      on public.quiz_questions using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "quizzes: owner_teacher write"        on public.quizzes        using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
+create policy "questions: owner_teacher write"      on public.quiz_questions using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
 
 -- Enrollments
 alter table public.enrollments enable row level security;
-create policy "enrollments: own or admin" on public.enrollments
-  using (auth.uid() = user_id or exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "enrollments: own or owner" on public.enrollments
+  using (auth.uid() = user_id or exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'owner'));
 
 -- Lesson progress
 alter table public.lesson_progress enable row level security;
@@ -376,7 +377,7 @@ alter table public.placement_test_questions enable row level security;
 alter table public.placement_test_results   enable row level security;
 create policy "pt_questions: authenticated read" on public.placement_test_questions for select using (auth.role() = 'authenticated');
 create policy "pt_results: own rows"             on public.placement_test_results   using (auth.uid() = user_id);
-create policy "pt_questions: admin write"        on public.placement_test_questions using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "pt_questions: owner write"        on public.placement_test_questions using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'owner'));
 
 -- Assignments
 alter table public.assignments            enable row level security;
@@ -384,9 +385,10 @@ alter table public.assignment_submissions enable row level security;
 create policy "assignments: enrolled read"   on public.assignments
   for select using (exists (select 1 from public.enrollments e where e.course_id = course_id and e.user_id = auth.uid()));
 create policy "submissions: own rows"        on public.assignment_submissions using (auth.uid() = user_id);
-create policy "assignments: admin write"     on public.assignments            using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
-create policy "submissions: admin read"      on public.assignment_submissions for select
-  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "assignments: owner_teacher write"     on public.assignments            using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));
+create policy "submissions: owner_teacher read"      on public.assignment_submissions for select
+  using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher'))
+    or user_id = auth.uid());
 
 -- Payments + Certificates + Live Sessions
 alter table public.payments       enable row level security;
@@ -395,4 +397,4 @@ alter table public.live_sessions  enable row level security;
 create policy "payments: own rows"         on public.payments      using (auth.uid() = user_id);
 create policy "certificates: own rows"     on public.certificates  using (auth.uid() = user_id);
 create policy "live_sessions: auth read"   on public.live_sessions for select using (auth.role() = 'authenticated');
-create policy "live_sessions: admin write" on public.live_sessions using (exists (select 1 from public.users u where u.id = auth.uid() and u.role = 'admin'));
+create policy "live_sessions: owner_teacher write" on public.live_sessions using (exists (select 1 from public.users u where u.id = auth.uid() and u.role in ('owner', 'teacher')));

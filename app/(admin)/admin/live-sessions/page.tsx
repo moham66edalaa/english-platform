@@ -1,11 +1,14 @@
-// 📁 app/(admin)/admin/live-sessions/page.tsx
+import { createClient }  from '@/lib/supabase/server'
+import { formatDate }    from '@/lib/utils'
+import SessionsManager   from '@/components/admin/SessionsManager'
 
-import { createClient } from '@/lib/supabase/server'
-import { formatDate }   from '@/lib/utils'
+export const metadata = { title: 'Live Sessions — Admin Panel | Eloquence' }
 
-export const metadata = { title: 'Live Sessions — Admin' }
+const serif = "'Cormorant Garamond', serif"
+const sans  = "'Raleway', sans-serif"
+const gold  = '#C9A84C'
 
-export default async function LiveSessionsPage() {
+export default async function OwnerLiveSessionsPage() {
   const supabase = await createClient()
 
   const { data: sessions } = await supabase
@@ -13,46 +16,99 @@ export default async function LiveSessionsPage() {
     .select('*, courses(title)')
     .order('starts_at', { ascending: true })
 
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-light text-[2rem]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-          Live Sessions
-        </h1>
-        <button className="bg-[var(--gold)] text-[var(--ink)] px-6 py-2.5 rounded-sm text-[0.78rem] font-semibold tracking-widest uppercase hover:bg-[var(--gold-light)] transition-all">
-          + Schedule Session
-        </button>
-      </div>
+  const { data: courses } = await supabase
+    .from('courses')
+    .select('id, title')
+    .order('sort_order')
 
-      <div className="flex flex-col gap-4">
-        {(sessions ?? []).length === 0 && (
-          <p className="text-[var(--muted)] text-[0.88rem]">No sessions scheduled yet.</p>
-        )}
-        {(sessions ?? []).map((s: {
-          id: string; title: string; meeting_url: string;
-          starts_at: string; duration_min: number;
-          courses: { title: string } | null
-        }) => (
-          <div key={s.id}
-               className="bg-[var(--ink-2)] border border-[rgba(245,240,232,0.07)] rounded-sm p-6 flex items-center justify-between gap-6 hover:border-[rgba(201,168,76,0.2)] transition-colors">
-            <div>
-              <p className="text-[0.7rem] tracking-widest uppercase text-[var(--gold)] mb-1">
-                {s.courses?.title ?? 'All students'}
-              </p>
-              <h3 className="font-semibold text-[1.1rem]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                {s.title}
-              </h3>
-              <p className="text-[0.8rem] text-[var(--muted)] mt-1">
-                {formatDate(s.starts_at)} · {s.duration_min} min
+  const count = sessions?.length ?? 0
+
+  return (
+    <>
+      <style>{`
+        .session-card { transition: border-color 0.2s, background 0.2s; }
+        .session-card:hover { border-color: rgba(201,168,76,0.3) !important; background-color: #161613; }
+        .schedule-btn { display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(201,168,76,0.25); border-radius:8px; padding:10px 18px; font-size:0.76rem; letter-spacing:0.06em; color:#C9A84C; text-decoration:none; transition:background 0.15s, border-color 0.15s; cursor:pointer; background:transparent; }
+        .schedule-btn:hover { background-color:rgba(201,168,76,0.07); border-color:rgba(201,168,76,0.5); }
+        .open-link { display:inline-flex; align-items:center; border:1px solid rgba(201,168,76,0.25); border-radius:8px; padding:8px 16px; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:#C9A84C; text-decoration:none; transition:background 0.15s, border-color 0.15s; white-space:nowrap; }
+        .open-link:hover { background-color:rgba(201,168,76,0.07); border-color:rgba(201,168,76,0.5); }
+      `}</style>
+
+      <div style={{ maxWidth: '1100px' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '36px' }}>
+          <div>
+            <p style={{ fontFamily: sans, fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: gold, marginBottom: '8px' }}>
+              Admin Panel
+            </p>
+            <h1 style={{ fontFamily: serif, fontWeight: 300, fontSize: '2.4rem', color: '#EAE4D2', marginBottom: '6px' }}>
+              Live Sessions
+            </h1>
+            <p style={{ fontFamily: sans, fontSize: '0.82rem', color: '#5E5A54' }}>
+              {count} session{count !== 1 ? 's' : ''} scheduled
+            </p>
+          </div>
+          <SessionsManager courses={courses ?? []} />
+        </div>
+
+        {/* Session cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {count === 0 ? (
+            <div style={{
+              backgroundColor: '#111110',
+              border: '1px solid rgba(245,240,232,0.07)',
+              borderRadius: 16,
+              padding: '60px 24px',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '12px', opacity: 0.3 }}>
+                ◎
+              </div>
+              <p style={{ fontFamily: sans, fontSize: '0.85rem', color: '#5E5A54' }}>
+                No sessions scheduled yet.
               </p>
             </div>
-            <a href={s.meeting_url} target="_blank" rel="noopener noreferrer"
-               className="border border-[rgba(201,168,76,0.4)] text-[var(--gold)] px-5 py-2 rounded-sm text-[0.75rem] tracking-widest uppercase hover:bg-[rgba(201,168,76,0.08)] transition-all whitespace-nowrap">
-              Open Link →
-            </a>
-          </div>
-        ))}
+          ) : (
+            (sessions ?? []).map((s: {
+              id: string; title: string; meeting_url: string;
+              starts_at: string; duration_min: number;
+              courses: { title: string } | null
+            }) => (
+              <div
+                key={s.id}
+                className="session-card"
+                style={{
+                  backgroundColor: '#111110',
+                  border: '1px solid rgba(245,240,232,0.07)',
+                  borderRadius: 16,
+                  padding: '24px 28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '24px',
+                }}
+              >
+                <div>
+                  <p style={{ fontFamily: sans, fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: gold, marginBottom: '6px' }}>
+                    {s.courses?.title ?? 'All students'}
+                  </p>
+                  <h3 style={{ fontFamily: serif, fontWeight: 500, fontSize: '1.15rem', color: '#EAE4D2', marginBottom: '4px' }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ fontFamily: sans, fontSize: '0.78rem', color: '#5E5A54' }}>
+                    {formatDate(s.starts_at)} &middot; {s.duration_min} min
+                  </p>
+                </div>
+                <a href={s.meeting_url} target="_blank" rel="noopener noreferrer" className="open-link" style={{ fontFamily: sans, fontWeight: 500 }}>
+                  Open Link &rarr;
+                </a>
+              </div>
+            ))
+          )}
+        </div>
+
       </div>
-    </div>
+    </>
   )
 }

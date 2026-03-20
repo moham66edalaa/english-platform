@@ -57,6 +57,22 @@ export default function SignupPage() {
         background: 'radial-gradient(ellipse 50% 30% at 50% 100%, rgba(201,168,76,0.06) 0%, transparent 100%)',
       }} />
 
+      {/* Back to homepage */}
+      <Link href="/" style={{
+        position: 'fixed', top: 24, left: 24, zIndex: 50,
+        display: 'flex', alignItems: 'center', gap: 8,
+        color: '#6b7280', textDecoration: 'none', fontSize: '0.8rem', letterSpacing: '0.08em',
+        transition: 'color 0.2s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.color = '#f5f0e8')}
+      onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M13 8H3M7 3L2 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Home
+      </Link>
+
       {/* Card */}
       <div className="relative z-10 w-full max-w-[400px] mx-4 py-10">
 

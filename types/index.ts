@@ -3,7 +3,7 @@
 
 import type { Database, CEFRLevel } from './database'
 
-export type { CEFRLevel, UserRole, CourseCategory, PlanName } from './database'
+export type { CEFRLevel, UserRole, CourseCategory, PlanName, MaterialType, SubscriptionStatus, AttendanceStatus } from './database'
 
 /* ── Row shorthands ── */
 export type UserRow               = Database['public']['Tables']['users']['Row']
@@ -24,6 +24,16 @@ export type SubmissionRow         = Database['public']['Tables']['assignment_sub
 export type PaymentRow            = Database['public']['Tables']['payments']['Row']
 export type CertificateRow        = Database['public']['Tables']['certificates']['Row']
 export type LiveSessionRow        = Database['public']['Tables']['live_sessions']['Row']
+export type GroupRow              = Database['public']['Tables']['groups']['Row']
+export type GroupMemberRow        = Database['public']['Tables']['group_members']['Row']
+export type TeacherCourseRow      = Database['public']['Tables']['teacher_courses']['Row']
+export type AttendanceRow         = Database['public']['Tables']['attendance']['Row']
+export type AnnouncementRow       = Database['public']['Tables']['announcements']['Row']
+export type ScheduledSessionRow   = Database['public']['Tables']['scheduled_sessions']['Row']
+export type PlatformSettingRow    = Database['public']['Tables']['platform_settings']['Row']
+export type LevelRow              = Database['public']['Tables']['levels']['Row']
+export type MaterialRow           = Database['public']['Tables']['materials']['Row']
+export type SubscriptionRow       = Database['public']['Tables']['subscriptions']['Row']
 
 /* ── Composite / enriched types ── */
 

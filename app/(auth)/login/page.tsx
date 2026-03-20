@@ -6,6 +6,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const DEMO_ACCOUNTS = [
+  { role: 'admin',   label: 'Admin',   arabicLabel: 'مدير المنصة', email: 'admin@eloquence.demo',   password: 'demo123456', color: '#C9A84C', bg: 'rgba(201,168,76,0.08)', border: 'rgba(201,168,76,0.25)' },
+  { role: 'teacher', label: 'Teacher', arabicLabel: 'مدرس',        email: 'teacher@eloquence.demo', password: 'demo123456', color: '#4CA8C9', bg: 'rgba(76,168,201,0.08)',  border: 'rgba(76,168,201,0.25)' },
+  { role: 'student', label: 'Student', arabicLabel: 'طالب',        email: 'student@eloquence.demo', password: 'demo123456', color: '#4CC9A8', bg: 'rgba(76,201,168,0.08)',  border: 'rgba(76,201,168,0.25)' },
+]
+
 export default function LoginPage() {
   const router = useRouter()
   const [email,    setEmail]    = useState('')
@@ -13,15 +19,45 @@ export default function LoginPage() {
   const [error,    setError]    = useState<string | null>(null)
   const [loading,  setLoading]  = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleLogin(loginEmail: string, loginPassword: string) {
     setError(null)
     setLoading(true)
     const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
-    if (authError) { setError(authError.message); setLoading(false); return }
-    router.push('/dashboard')
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    })
+    if (authError || !data.user) { setError(authError?.message ?? 'Login failed'); setLoading(false); return }
+
+    // Redirect based on role
+    const userId = data.user.id
+    const { data: profile } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    const role = (profile as any)?.role ?? 'student'
+    if (role === 'admin') {
+      router.push('/admin')
+    } else if (role === 'teacher') {
+      router.push('/teacher')
+    } else {
+      router.push('/dashboard')
+    }
     router.refresh()
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    await handleLogin(email, password)
+  }
+
+  function fillDemo(account: typeof DEMO_ACCOUNTS[0]) {
+    setEmail(account.email)
+    setPassword(account.password)
+    // Auto-submit after brief visual feedback
+    setTimeout(() => handleLogin(account.email, account.password), 150)
   }
 
   const inputStyle: React.CSSProperties = {
@@ -37,7 +73,6 @@ export default function LoginPage() {
     transition: 'border-color 0.25s, background 0.25s',
     WebkitTextFillColor: '#f5f0e8',
     caretColor: '#c9a84c',
-    /* force override browser autofill */
     WebkitBoxShadow: '0 0 0 1000px rgba(26,30,40,0.98) inset',
   }
 
@@ -54,6 +89,22 @@ export default function LoginPage() {
       <div className="absolute inset-0 pointer-events-none" style={{
         background: 'radial-gradient(ellipse 50% 30% at 50% 100%, rgba(201,168,76,0.06) 0%, transparent 100%)',
       }} />
+
+      {/* Back to homepage */}
+      <Link href="/" style={{
+        position: 'fixed', top: 24, left: 24, zIndex: 50,
+        display: 'flex', alignItems: 'center', gap: 8,
+        color: '#6b7280', textDecoration: 'none', fontSize: '0.8rem', letterSpacing: '0.08em',
+        transition: 'color 0.2s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.color = '#f5f0e8')}
+      onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M13 8H3M7 3L2 8l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Home
+      </Link>
 
       {/* Card */}
       <div className="relative z-10 w-full max-w-[400px] mx-4">
@@ -217,7 +268,7 @@ export default function LoginPage() {
             onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-1px)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
           >
-            {loading ? 'Signing in…' : 'Sign In'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
           {/* Divider */}
@@ -272,9 +323,86 @@ export default function LoginPage() {
 
         </form>
 
+        {/* Demo Accounts Section */}
+        <div style={{ marginTop: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(245,240,232,0.08)' }} />
+            <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(245,240,232,0.25)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: 'rgba(201,168,76,0.5)', display: 'inline-block' }} />
+              Quick Login — Demo Accounts
+            </span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(245,240,232,0.08)' }} />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {DEMO_ACCOUNTS.map((account) => (
+              <button
+                key={account.role}
+                type="button"
+                disabled={loading}
+                onClick={() => fillDemo(account)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  background: account.bg,
+                  border: `1px solid ${account.border}`,
+                  borderRadius: '6px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: loading ? 0.5 : 1,
+                }}
+                onMouseEnter={e => {
+                  if (!loading) {
+                    e.currentTarget.style.borderColor = account.color
+                    e.currentTarget.style.background = account.bg.replace('0.08', '0.14')
+                  }
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = account.border
+                  e.currentTarget.style.background = account.bg
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: account.color, flexShrink: 0 }}>
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span style={{ fontSize: '0.82rem', color: '#d8cebc', letterSpacing: '0.02em' }}>
+                    {account.email}
+                  </span>
+                </div>
+                <span style={{
+                  fontSize: '0.6rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  padding: '3px 10px',
+                  borderRadius: '3px',
+                  color: account.color,
+                  border: `1px solid ${account.border}`,
+                  backgroundColor: 'transparent',
+                }}>
+                  {account.arabicLabel}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <p style={{
+            textAlign: 'center',
+            fontSize: '0.68rem',
+            color: 'rgba(245,240,232,0.2)',
+            marginTop: '0.75rem',
+          }}>
+            Click any role to auto-login with demo credentials
+          </p>
+        </div>
+
         {/* Footer */}
         <p style={{
-          marginTop: '2.25rem',
+          marginTop: '2rem',
           textAlign: 'center',
           fontSize: '0.78rem',
           color: '#6b7280',
