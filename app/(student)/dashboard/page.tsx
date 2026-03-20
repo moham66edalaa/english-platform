@@ -27,11 +27,30 @@ export default async function DashboardPage() {
     .select('lesson_id, completed')
     .eq('user_id', user.id)
 
-  const courseIds = (enrollments ?? []).map((e: any) => e.courses.id)
-  const { data: allLessons } = await supabase
-    .from('lessons')
-    .select('id, section_id, sections(course_id)')
-    .in('sections.course_id', courseIds)
+  const courseIds = (enrollments ?? []).map((e: any) => e.courses?.id).filter(Boolean)
+
+  // Get sections for enrolled courses, then get their lessons
+  const { data: courseSections } = courseIds.length > 0
+    ? await supabase
+        .from('sections')
+        .select('id, course_id')
+        .in('course_id', courseIds)
+    : { data: [] }
+
+  const sectionIds = (courseSections ?? []).map((s: any) => s.id)
+  const { data: allLessons } = sectionIds.length > 0
+    ? await supabase
+        .from('lessons')
+        .select('id, section_id')
+        .in('section_id', sectionIds)
+    : { data: [] }
+
+  // Build a map: lesson_id → course_id
+  const sectionToCourse = new Map((courseSections ?? []).map((s: any) => [s.id, s.course_id]))
+  const lessonsWithCourse = (allLessons ?? []).map((l: any) => ({
+    ...l,
+    course_id: sectionToCourse.get(l.section_id),
+  }))
 
   const completedIds = new Set((allProgress ?? []).filter((p: any) => p.completed).map((p: any) => p.lesson_id))
   const firstName = (user.full_name ?? 'Student').replace(/^Demo\s*/i, '').split(' ')[0] || 'Student'
@@ -126,12 +145,12 @@ export default async function DashboardPage() {
             gap: 20,
           }}>
             {(enrollments ?? []).map((enrollment: any) => {
-              const courseId = enrollment.courses.id
-              const totalLessons = (allLessons ?? []).filter(
-                (l: any) => l.sections?.course_id === courseId
+              const courseId = enrollment.courses?.id
+              const totalLessons = lessonsWithCourse.filter(
+                (l: any) => l.course_id === courseId
               ).length
-              const completedLessons = (allLessons ?? []).filter(
-                (l: any) => l.sections?.course_id === courseId && completedIds.has(l.id)
+              const completedLessons = lessonsWithCourse.filter(
+                (l: any) => l.course_id === courseId && completedIds.has(l.id)
               ).length
               const progress = computeProgress(totalLessons, completedLessons)
 

@@ -9,14 +9,14 @@
 -- NOTE: Auth users must be created via supabase.auth.signUp() or the dashboard.
 -- After creating the instructor account, run this to promote it:
 --
--- update public.users set role = 'owner' where email = 'instructor@eloquence.com';
+-- update public.users set role = 'admin' where email = 'instructor@eloquence.com';
 --
 -- ── Demo accounts (create via Supabase Dashboard → Authentication → Users) ──
--- 1. Create user: owner@eloquence.demo / demo123456
+-- 1. Create user: admin@eloquence.demo / demo123456
 -- 2. Create user: teacher@eloquence.demo / demo123456
 -- 3. Create user: student@eloquence.demo / demo123456
 -- Then run:
--- update public.users set role = 'owner', full_name = 'Demo Owner' where email = 'owner@eloquence.demo';
+-- update public.users set role = 'admin', full_name = 'Demo Admin' where email = 'admin@eloquence.demo';
 -- update public.users set role = 'teacher', full_name = 'Demo Teacher' where email = 'teacher@eloquence.demo';
 -- update public.users set full_name = 'Demo Student' where email = 'student@eloquence.demo';
 

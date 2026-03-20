@@ -69,7 +69,7 @@ export default async function ResultsPage() {
     .eq('user_id', user.id)
     .order('taken_at', { ascending: false })
 
-  const latestPlacement = (placementResults ?? [])[0] ?? null
+  const latestPlacement: any = (placementResults ?? [])[0] ?? null
 
   return (
     <div style={{ maxWidth: 1000 }}>
@@ -199,7 +199,7 @@ export default async function ResultsPage() {
                 color: teal,
                 lineHeight: 1,
               }}>
-                {latestPlacement.cefr_level ?? latestPlacement.assigned_level ?? '—'}
+                {latestPlacement.assigned_level ?? '—'}
               </p>
             </div>
 

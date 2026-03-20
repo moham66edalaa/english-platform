@@ -8,15 +8,18 @@ import { createClient }           from '@/lib/supabase/client'
 import type { UserRow }           from '@/types'
 
 const NAV = [
-  { href: '/dashboard',    label: 'Dashboard',      icon: '⊞' },
-  { href: '/my-courses',   label: 'My Courses',     icon: '▶' },
-  { href: '/schedule',     label: 'Schedule',        icon: '◷' },
-  { href: '/assignments',  label: 'Assignments',    icon: '◈' },
-  { href: '/results',      label: 'Results',         icon: '◉' },
-  { href: '/attendance',   label: 'Attendance',      icon: '✓' },
-  { href: '/test',         label: 'Placement Test', icon: '✎' },
-  { href: '/certificates', label: 'Certificates',   icon: '◇' },
-  { href: '/profile',      label: 'Profile',         icon: '◎' },
+  { href: '/dashboard',     label: 'Dashboard',      icon: '⊞' },
+  { href: '/my-level',      label: 'My Level',       icon: '▦' },
+  { href: '/my-courses',    label: 'My Courses',     icon: '▶' },
+  { href: '/schedule',      label: 'Schedule',       icon: '◷' },
+  { href: '/assignments',   label: 'Homework',       icon: '◈' },
+  { href: '/results',       label: 'Exams / Results', icon: '◉' },
+  { href: '/attendance',    label: 'Attendance',     icon: '✓' },
+  { href: '/progress',      label: 'Progress',       icon: '↗' },
+  { href: '/subscription',  label: 'Subscription',   icon: '★' },
+  { href: '/test',          label: 'Placement Test', icon: '✎' },
+  { href: '/certificates',  label: 'Certificates',  icon: '◇' },
+  { href: '/profile',       label: 'Profile',        icon: '◎' },
 ]
 
 const teal  = '#4CC9A8'
@@ -36,7 +39,7 @@ export default function Sidebar({ user }: { user: UserRow }) {
 
   const displayName = (user.full_name ?? 'Student').replace(/^Demo\s*/i, '')
   const initials = displayName.slice(0, 2).toUpperCase()
-  const isOwner   = user.role === 'owner'
+  const isAdmin   = user.role === 'admin'
   const isTeacher = user.role === 'teacher'
 
   return (
@@ -124,13 +127,13 @@ export default function Sidebar({ user }: { user: UserRow }) {
           })}
 
           {/* Owner/Teacher panel link */}
-          {(isOwner || isTeacher) && (
+          {(isAdmin || isTeacher) && (
             <>
               <div style={{ height: 1, backgroundColor: 'rgba(245,240,232,0.07)', margin: '12px 10px' }} />
               <p style={{ fontFamily: sans, fontSize: '0.55rem', fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(76,201,168,0.4)', padding: '6px 12px 8px' }}>
-                {isOwner ? 'Owner' : 'Teacher'}
+                {isAdmin ? 'Admin' : 'Teacher'}
               </p>
-              <Link href={isOwner ? '/owner' : '/teacher'} style={{
+              <Link href={isAdmin ? '/admin' : '/teacher'} style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
                 padding: '9px 12px', borderRadius: '6px', marginBottom: '2px',
                 fontSize: '0.8rem', fontFamily: sans, fontWeight: 500,
@@ -144,7 +147,7 @@ export default function Sidebar({ user }: { user: UserRow }) {
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#8A8278' }}
               >
                 <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>⚙</span>
-                {isOwner ? 'Owner Panel' : 'Teacher Panel'}
+                {isAdmin ? 'Admin Panel' : 'Teacher Panel'}
               </Link>
             </>
           )}
@@ -238,9 +241,9 @@ export default function Sidebar({ user }: { user: UserRow }) {
               </Link>
             )
           })}
-          {(isOwner || isTeacher) && (
-            <Link href={isOwner ? '/owner' : '/teacher'} onClick={() => setOpen(false)} style={{ display: 'flex', alignItems: 'center', padding: '9px 12px', borderRadius: 3, fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none', color: teal, letterSpacing: '0.02em', borderTop: '1px solid rgba(245,240,232,0.07)', marginTop: 4, paddingTop: 12 }}>
-              ⚙ {isOwner ? 'Owner Panel' : 'Teacher Panel'}
+          {(isAdmin || isTeacher) && (
+            <Link href={isAdmin ? '/admin' : '/teacher'} onClick={() => setOpen(false)} style={{ display: 'flex', alignItems: 'center', padding: '9px 12px', borderRadius: 3, fontSize: '0.82rem', fontWeight: 500, textDecoration: 'none', color: teal, letterSpacing: '0.02em', borderTop: '1px solid rgba(245,240,232,0.07)', marginTop: 4, paddingTop: 12 }}>
+              ⚙ {isAdmin ? 'Admin Panel' : 'Teacher Panel'}
             </Link>
           )}
         </div>

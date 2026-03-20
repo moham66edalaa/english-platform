@@ -1,5 +1,5 @@
 /**
- * Creates demo users in Supabase Auth.
+ * Creates demo users in Supabase Auth + public.users.
  *
  * Usage:
  *   npx tsx scripts/create-demo-users.ts
@@ -35,21 +35,27 @@ if (!supabaseUrl || !serviceRoleKey) {
   process.exit(1)
 }
 
+// Service role key bypasses RLS
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
 const DEMO_USERS = [
-  { email: 'owner@eloquence.demo',   password: 'demo123456', role: 'owner',   fullName: 'Demo Owner' },
+  { email: 'admin@eloquence.demo',   password: 'demo123456', role: 'admin',   fullName: 'Demo Admin' },
   { email: 'teacher@eloquence.demo', password: 'demo123456', role: 'teacher', fullName: 'Demo Teacher' },
   { email: 'student@eloquence.demo', password: 'demo123456', role: 'student', fullName: 'Demo Student' },
 ]
 
 async function main() {
-  for (const user of DEMO_USERS) {
-    console.log(`Creating ${user.role}: ${user.email}...`)
+  console.log('Service Role Key:', serviceRoleKey!.slice(0, 20) + '...')
+  console.log()
 
-    // Create auth user (or skip if exists)
+  for (const user of DEMO_USERS) {
+    console.log(`\n── ${user.role}: ${user.email} ──`)
+
+    // 1. Create or get auth user
+    let userId: string | undefined
+
     const { data, error } = await supabase.auth.admin.createUser({
       email: user.email,
       password: user.password,
@@ -58,33 +64,68 @@ async function main() {
     })
 
     if (error) {
-      if (error.message?.includes('already been registered') || error.message?.includes('already exists')) {
-        console.log(`  ⚡ Already exists, updating role...`)
+      if (error.message?.includes('already') ) {
+        console.log('  Auth: already exists, looking up ID...')
+        // Find existing user ID
+        const { data: { users } } = await supabase.auth.admin.listUsers()
+        const found = users?.find(u => u.email === user.email)
+        userId = found?.id
+        if (userId) {
+          console.log(`  Auth: found (id: ${userId})`)
+        } else {
+          console.error('  ❌ Could not find auth user!')
+          continue
+        }
       } else {
-        console.error(`  ❌ Error: ${error.message}`)
+        console.error(`  ❌ Auth error: ${error.message}`)
         continue
       }
     } else {
-      console.log(`  ✅ Created (id: ${data.user.id})`)
+      userId = data.user.id
+      console.log(`  Auth: created (id: ${userId})`)
     }
 
-    // Update role and full_name in public.users table
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ role: user.role, full_name: user.fullName })
-      .eq('email', user.email)
+    // 2. Create/update profile in public.users via raw SQL (bypasses RLS)
+    const { error: sqlError } = await supabase.rpc('exec_sql' as any, {
+      query: `
+        INSERT INTO public.users (id, email, full_name, role, is_active)
+        VALUES ('${userId}', '${user.email}', '${user.fullName}', '${user.role}', true)
+        ON CONFLICT (id) DO UPDATE SET
+          role = EXCLUDED.role,
+          full_name = EXCLUDED.full_name,
+          email = EXCLUDED.email;
+      `
+    })
 
-    if (updateError) {
-      console.error(`  ❌ Role update error: ${updateError.message}`)
+    if (sqlError) {
+      // exec_sql RPC doesn't exist — try direct upsert
+      console.log('  Profile: trying direct upsert...')
+      const { error: upsertError } = await supabase
+        .from('users')
+        .upsert(
+          { id: userId, email: user.email, role: user.role, full_name: user.fullName, is_active: true } as any,
+          { onConflict: 'id' }
+        )
+
+      if (upsertError) {
+        console.error(`  ❌ Profile error: ${upsertError.message}`)
+        console.log('  💡 Try running this SQL in Supabase Dashboard → SQL Editor:')
+        console.log(`     INSERT INTO public.users (id, email, full_name, role, is_active)`)
+        console.log(`     VALUES ('${userId}', '${user.email}', '${user.fullName}', '${user.role}', true)`)
+        console.log(`     ON CONFLICT (id) DO UPDATE SET role='${user.role}', full_name='${user.fullName}';`)
+      } else {
+        console.log(`  ✅ Profile: role="${user.role}"`)
+      }
     } else {
-      console.log(`  ✅ Role set to "${user.role}"`)
+      console.log(`  ✅ Profile: role="${user.role}"`)
     }
   }
 
-  console.log('\nDone! Demo accounts ready:')
-  console.log('  owner@eloquence.demo   / demo123456  (صاحب المنصة)')
-  console.log('  teacher@eloquence.demo / demo123456  (مدرس)')
-  console.log('  student@eloquence.demo / demo123456  (طالب)')
+  console.log('\n════════════════════════════════')
+  console.log('Demo accounts:')
+  console.log('  admin@eloquence.demo   / demo123456')
+  console.log('  teacher@eloquence.demo / demo123456')
+  console.log('  student@eloquence.demo / demo123456')
 }
 
 main().catch(console.error)

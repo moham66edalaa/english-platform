@@ -40,12 +40,12 @@ export default async function TeacherAttendancePage() {
         .select('*')
         .in('group_id', groupIds)
         .eq('session_date', today)
-    : { data: [] }
+    : { data: [] as any[] }
 
   // Build lookup: groupId+userId -> status
   const attendanceMap = new Map<string, AttendanceStatus>()
-  for (const record of todayAttendance ?? []) {
-    attendanceMap.set(`${record.group_id}:${record.user_id}`, record.status)
+  for (const record of (todayAttendance ?? []) as any[]) {
+    attendanceMap.set(`${record.group_id}:${record.user_id}`, record.status as AttendanceStatus)
   }
 
   const groups      = myGroups ?? []

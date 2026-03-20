@@ -1,13 +1,13 @@
 // 📁 middleware.ts
 // Protects /dashboard, /learn, /my-courses, /assignments, /certificates, /test (student)
-// /owner/** (owner only), and /teacher/** (teacher + owner).
+// /admin/** (admin only), and /teacher/** (teacher + admin).
 // Public routes (/, /courses, /placement-test, /login, /signup) are open.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 const STUDENT_PATHS = ['/dashboard', '/learn', '/my-courses', '/assignments', '/certificates', '/test']
-const OWNER_PATHS   = ['/owner']
+const ADMIN_PATHS   = ['/admin']
 const TEACHER_PATHS = ['/teacher']
 
 export async function middleware(request: NextRequest) {
@@ -38,9 +38,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isStudentPath = STUDENT_PATHS.some((p) => pathname.startsWith(p))
-  const isOwnerPath   = OWNER_PATHS.some((p) => pathname.startsWith(p))
+  const isAdminPath   = ADMIN_PATHS.some((p) => pathname.startsWith(p))
   const isTeacherPath = TEACHER_PATHS.some((p) => pathname.startsWith(p))
-  const isProtected   = isStudentPath || isOwnerPath || isTeacherPath
+  const isProtected   = isStudentPath || isAdminPath || isTeacherPath
   const isAuthPage    = pathname === '/login' || pathname === '/signup'
 
   // 2. Unauthenticated → redirect to login
@@ -52,7 +52,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 3. For role-based checks, fetch role from public.users table
-  if (user && (isOwnerPath || isTeacherPath || isAuthPage)) {
+  if (user && (isAdminPath || isTeacherPath || isAuthPage)) {
     const { data: profile } = await supabase
       .from('users')
       .select('role')
@@ -61,15 +61,15 @@ export async function middleware(request: NextRequest) {
 
     const role = profile?.role ?? 'student'
 
-    // Non-owner trying to access owner pages → redirect to dashboard
-    if (isOwnerPath && role !== 'owner') {
+    // Non-admin trying to access admin pages → redirect to dashboard
+    if (isAdminPath && role !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
 
-    // Non-teacher/non-owner trying to access teacher pages → redirect to dashboard
-    if (isTeacherPath && role !== 'teacher' && role !== 'owner') {
+    // Non-teacher/non-admin trying to access teacher pages → redirect to dashboard
+    if (isTeacherPath && role !== 'teacher' && role !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
@@ -78,8 +78,8 @@ export async function middleware(request: NextRequest) {
     // Authenticated user visiting /login or /signup → redirect based on role
     if (isAuthPage) {
       const url = request.nextUrl.clone()
-      if (role === 'owner') {
-        url.pathname = '/owner'
+      if (role === 'admin') {
+        url.pathname = '/admin'
       } else if (role === 'teacher') {
         url.pathname = '/teacher'
       } else {

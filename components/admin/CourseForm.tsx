@@ -46,7 +46,7 @@ export default function CourseForm({ course }: { course: CourseRow | null }) {
       await supabase.from('courses').insert(payload as never)
     }
     setSaving(false)
-    router.push('/owner/courses')
+    router.push('/admin/courses')
     router.refresh()
   }
 

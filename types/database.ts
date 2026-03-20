@@ -5,11 +5,14 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1'
-export type UserRole = 'student' | 'teacher' | 'owner'
+export type UserRole = 'student' | 'teacher' | 'admin'
 export type CourseCategory = 'level' | 'skill' | 'academic' | 'exam'
 export type PlanName = 'standard' | 'premium'
 export type PaymentStatus = 'pending' | 'completed' | 'refunded' | 'failed'
 export type AssignmentStatus = 'submitted' | 'reviewed'
+export type MaterialType = 'pdf' | 'video' | 'worksheet' | 'vocabulary'
+export type SubscriptionStatus = 'active' | 'expired' | 'cancelled'
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
 
 export interface Database {
   public: {
@@ -22,6 +25,11 @@ export interface Database {
           avatar_url: string | null
           role:       UserRole
           cefr_level: CEFRLevel | null
+          level_id:   string | null
+          phone:      string | null
+          parent_name: string | null
+          bio:        string | null
+          is_active:  boolean
           created_at: string
           updated_at: string
         }
@@ -42,6 +50,7 @@ export interface Database {
           skill_type:    'grammar' | 'speaking' | null
           academic_year: '1st_secondary' | '2nd_secondary' | '3rd_secondary' | null
           exam_type:     'IELTS' | 'TOEFL' | null
+          level_id:      string | null
           is_published:  boolean
           sort_order:    number
           created_at:    string
@@ -290,6 +299,7 @@ export interface Database {
           name:          string
           course_id:     string | null
           teacher_id:    string | null
+          level_id:      string | null
           max_students:  number
           schedule_note: string | null
           is_active:     boolean
@@ -379,6 +389,50 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['platform_settings']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['platform_settings']['Insert']>
+      }
+
+      levels: {
+        Row: {
+          id:          string
+          name:        string
+          slug:        string
+          description: string | null
+          sort_order:  number
+          is_active:   boolean
+          created_at:  string
+        }
+        Insert: Omit<Database['public']['Tables']['levels']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['levels']['Insert']>
+      }
+
+      materials: {
+        Row: {
+          id:         string
+          teacher_id: string
+          course_id:  string | null
+          lesson_id:  string | null
+          title:      string
+          type:       MaterialType
+          file_url:   string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['materials']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['materials']['Insert']>
+      }
+
+      subscriptions: {
+        Row: {
+          id:         string
+          user_id:    string
+          plan_id:    string
+          status:     SubscriptionStatus
+          starts_at:  string
+          expires_at: string | null
+          auto_renew: boolean
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['subscriptions']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['subscriptions']['Insert']>
       }
     }
   }

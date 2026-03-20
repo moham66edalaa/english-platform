@@ -1,6 +1,7 @@
 // app/(teacher)/teacher/live-sessions/page.tsx
 
 import { createClient } from '@/lib/supabase/server'
+import { requireUser }  from '@/lib/auth/helpers'
 import { formatDate }   from '@/lib/utils'
 
 export const metadata = { title: 'Live Sessions — Eloquence Teacher Panel' }
@@ -10,12 +11,25 @@ const sans  = "'Raleway', sans-serif"
 const blue  = '#4CA8C9'
 
 export default async function TeacherLiveSessionsPage() {
+  const user = await requireUser()
   const supabase = await createClient()
 
-  const { data: sessions } = await supabase
-    .from('live_sessions')
-    .select('*, courses(title)')
-    .order('starts_at', { ascending: true })
+  // Get teacher's assigned course IDs
+  const { data: teacherCourses } = await supabase
+    .from('teacher_courses')
+    .select('course_id')
+    .eq('teacher_id', user.id)
+
+  const courseIds = (teacherCourses ?? []).map((tc: any) => tc.course_id)
+
+  // Only fetch sessions for teacher's courses
+  const { data: sessions } = courseIds.length > 0
+    ? await supabase
+        .from('live_sessions')
+        .select('*, courses(title)')
+        .in('course_id', courseIds)
+        .order('starts_at', { ascending: true })
+    : { data: [] }
 
   const sessionList = sessions ?? []
 

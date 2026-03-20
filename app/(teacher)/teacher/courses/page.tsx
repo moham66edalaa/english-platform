@@ -1,22 +1,27 @@
 // app/(teacher)/teacher/courses/page.tsx
 
 import { createClient } from '@/lib/supabase/server'
-import Link             from 'next/link'
+import { requireUser }  from '@/lib/auth/helpers'
 
-export const metadata = { title: 'Courses — Eloquence Teacher Panel' }
+export const metadata = { title: 'My Courses — Eloquence Teacher Panel' }
 
 const serif = "'Cormorant Garamond', serif"
 const sans  = "'Raleway', sans-serif"
 const blue  = '#4CA8C9'
 
 export default async function TeacherCoursesPage() {
+  const user = await requireUser()
   const supabase = await createClient()
-  const { data: courses } = await supabase
-    .from('courses')
-    .select('*, plans(*)')
-    .order('sort_order')
 
-  const courseList = courses ?? []
+  // Only fetch courses assigned to this teacher
+  const { data: teacherCourses } = await supabase
+    .from('teacher_courses')
+    .select('courses(*, plans(*))')
+    .eq('teacher_id', user.id)
+
+  const courseList = (teacherCourses ?? [])
+    .map((tc: any) => tc.courses)
+    .filter(Boolean)
 
   return (
     <>
@@ -34,32 +39,12 @@ export default async function TeacherCoursesPage() {
               Teacher Panel
             </p>
             <h1 style={{ fontFamily: serif, fontWeight: 300, fontSize: '2.4rem', color: '#EAE4D2', marginBottom: '6px' }}>
-              Courses
+              My Courses
             </h1>
             <p style={{ fontFamily: sans, fontSize: '0.82rem', color: '#5E5A54' }}>
-              {courseList.length} course{courseList.length !== 1 ? 's' : ''} available
+              {courseList.length} course{courseList.length !== 1 ? 's' : ''} assigned to you
             </p>
           </div>
-
-          <Link
-            href="/teacher/courses/new"
-            style={{
-              fontFamily: sans,
-              fontSize: '0.72rem',
-              fontWeight: 600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase' as const,
-              color: blue,
-              border: `1px solid rgba(76,168,201,0.35)`,
-              borderRadius: '8px',
-              padding: '10px 22px',
-              textDecoration: 'none',
-              transition: 'background-color 0.2s',
-              whiteSpace: 'nowrap' as const,
-            }}
-          >
-            + New Course
-          </Link>
         </div>
 
         {/* Table card */}

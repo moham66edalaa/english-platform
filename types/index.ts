@@ -3,7 +3,7 @@
 
 import type { Database, CEFRLevel } from './database'
 
-export type { CEFRLevel, UserRole, CourseCategory, PlanName } from './database'
+export type { CEFRLevel, UserRole, CourseCategory, PlanName, MaterialType, SubscriptionStatus, AttendanceStatus } from './database'
 
 /* ── Row shorthands ── */
 export type UserRow               = Database['public']['Tables']['users']['Row']
@@ -31,6 +31,9 @@ export type AttendanceRow         = Database['public']['Tables']['attendance']['
 export type AnnouncementRow       = Database['public']['Tables']['announcements']['Row']
 export type ScheduledSessionRow   = Database['public']['Tables']['scheduled_sessions']['Row']
 export type PlatformSettingRow    = Database['public']['Tables']['platform_settings']['Row']
+export type LevelRow              = Database['public']['Tables']['levels']['Row']
+export type MaterialRow           = Database['public']['Tables']['materials']['Row']
+export type SubscriptionRow       = Database['public']['Tables']['subscriptions']['Row']
 
 /* ── Composite / enriched types ── */
 

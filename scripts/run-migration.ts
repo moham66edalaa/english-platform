@@ -55,35 +55,35 @@ $$;`,
 
   // 3. Recreate non-recursive policies
   `CREATE POLICY "users: read own row" ON public.users FOR SELECT USING (auth.uid() = id);`,
-  `CREATE POLICY "owner: read all users" ON public.users FOR SELECT USING (public.get_my_role() = 'owner' OR id = auth.uid());`,
+  `CREATE POLICY "owner: read all users" ON public.users FOR SELECT USING (public.get_my_role() = 'admin' OR id = auth.uid());`,
 
   // 4. Fix other tables
-  `DROP POLICY IF EXISTS "courses: owner_teacher all" ON public.courses;`,
-  `CREATE POLICY "courses: owner_teacher all" ON public.courses FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "courses: admin_teacher all" ON public.courses;`,
+  `CREATE POLICY "courses: admin_teacher all" ON public.courses FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
-  `DROP POLICY IF EXISTS "sections: owner_teacher write" ON public.sections;`,
-  `CREATE POLICY "sections: owner_teacher write" ON public.sections FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "sections: admin_teacher write" ON public.sections;`,
+  `CREATE POLICY "sections: admin_teacher write" ON public.sections FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
-  `DROP POLICY IF EXISTS "lessons: owner_teacher write" ON public.lessons;`,
-  `CREATE POLICY "lessons: owner_teacher write" ON public.lessons FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "lessons: admin_teacher write" ON public.lessons;`,
+  `CREATE POLICY "lessons: admin_teacher write" ON public.lessons FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
-  `DROP POLICY IF EXISTS "attachments: owner_teacher write" ON public.attachments;`,
-  `CREATE POLICY "attachments: owner_teacher write" ON public.attachments FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "attachments: admin_teacher write" ON public.attachments;`,
+  `CREATE POLICY "attachments: admin_teacher write" ON public.attachments FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
-  `DROP POLICY IF EXISTS "quizzes: owner_teacher write" ON public.quizzes;`,
-  `CREATE POLICY "quizzes: owner_teacher write" ON public.quizzes FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "quizzes: admin_teacher write" ON public.quizzes;`,
+  `CREATE POLICY "quizzes: admin_teacher write" ON public.quizzes FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
-  `DROP POLICY IF EXISTS "questions: owner_teacher write" ON public.quiz_questions;`,
-  `CREATE POLICY "questions: owner_teacher write" ON public.quiz_questions FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "questions: admin_teacher write" ON public.quiz_questions;`,
+  `CREATE POLICY "questions: admin_teacher write" ON public.quiz_questions FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
   `DROP POLICY IF EXISTS "pt_questions: owner write" ON public.placement_test_questions;`,
-  `CREATE POLICY "pt_questions: owner write" ON public.placement_test_questions FOR ALL USING (public.get_my_role() = 'owner');`,
+  `CREATE POLICY "pt_questions: owner write" ON public.placement_test_questions FOR ALL USING (public.get_my_role() = 'admin');`,
 
-  `DROP POLICY IF EXISTS "assignments: owner_teacher write" ON public.assignments;`,
-  `CREATE POLICY "assignments: owner_teacher write" ON public.assignments FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "assignments: admin_teacher write" ON public.assignments;`,
+  `CREATE POLICY "assignments: admin_teacher write" ON public.assignments FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 
-  `DROP POLICY IF EXISTS "live_sessions: owner_teacher write" ON public.live_sessions;`,
-  `CREATE POLICY "live_sessions: owner_teacher write" ON public.live_sessions FOR ALL USING (public.get_my_role() IN ('owner', 'teacher'));`,
+  `DROP POLICY IF EXISTS "live_sessions: admin_teacher write" ON public.live_sessions;`,
+  `CREATE POLICY "live_sessions: admin_teacher write" ON public.live_sessions FOR ALL USING (public.get_my_role() IN ('admin', 'teacher'));`,
 ]
 
 async function main() {

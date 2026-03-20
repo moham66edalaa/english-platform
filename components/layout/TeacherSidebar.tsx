@@ -13,11 +13,14 @@ const NAV = [
   { href: '/teacher', label: 'Overview', exact: true },
   { href: '/teacher/students', label: 'My Students' },
   { href: '/teacher/groups', label: 'My Groups' },
-  { href: '/teacher/courses', label: 'Courses' },
-  { href: '/teacher/assignments', label: 'Assignments' },
+  { href: '/teacher/courses', label: 'My Courses' },
+  { href: '/teacher/assignments', label: 'Homework' },
+  { href: '/teacher/exams', label: 'Exams & Quizzes' },
   { href: '/teacher/attendance', label: 'Attendance' },
-  { href: '/teacher/live-sessions', label: 'Live Sessions' },
+  { href: '/teacher/live-sessions', label: 'Sessions' },
+  { href: '/teacher/materials', label: 'Materials' },
   { href: '/teacher/announcements', label: 'Announcements' },
+  { href: '/teacher/profile', label: 'Profile' },
 ]
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -73,6 +76,23 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M3 7.5h2l8-4v11l-8-4H3v-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
       <path d="M5 10.5v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
       <path d="M14 6.5a3 3 0 010 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/teacher/exams': (
+    <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+      <path d="M4 2h10a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M6 6h6M6 9h6M6 12h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  ),
+  '/teacher/materials': (
+    <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+      <path d="M3 3h4l2 2h6a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.4"/>
+    </svg>
+  ),
+  '/teacher/profile': (
+    <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+      <circle cx="9" cy="6" r="3" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M3 16c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   ),
 }

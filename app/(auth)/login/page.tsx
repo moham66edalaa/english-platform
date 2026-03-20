@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 const DEMO_ACCOUNTS = [
-  { role: 'owner',   label: 'Owner',   arabicLabel: 'صاحب المنصة', email: 'owner@eloquence.demo',   password: 'demo123456', color: '#C9A84C', bg: 'rgba(201,168,76,0.08)', border: 'rgba(201,168,76,0.25)' },
+  { role: 'admin',   label: 'Admin',   arabicLabel: 'مدير المنصة', email: 'admin@eloquence.demo',   password: 'demo123456', color: '#C9A84C', bg: 'rgba(201,168,76,0.08)', border: 'rgba(201,168,76,0.25)' },
   { role: 'teacher', label: 'Teacher', arabicLabel: 'مدرس',        email: 'teacher@eloquence.demo', password: 'demo123456', color: '#4CA8C9', bg: 'rgba(76,168,201,0.08)',  border: 'rgba(76,168,201,0.25)' },
   { role: 'student', label: 'Student', arabicLabel: 'طالب',        email: 'student@eloquence.demo', password: 'demo123456', color: '#4CC9A8', bg: 'rgba(76,201,168,0.08)',  border: 'rgba(76,201,168,0.25)' },
 ]
@@ -27,18 +27,19 @@ export default function LoginPage() {
       email: loginEmail,
       password: loginPassword,
     })
-    if (authError) { setError(authError.message); setLoading(false); return }
+    if (authError || !data.user) { setError(authError?.message ?? 'Login failed'); setLoading(false); return }
 
     // Redirect based on role
+    const userId = data.user.id
     const { data: profile } = await supabase
       .from('users')
-      .select('role')
-      .eq('id', data.user.id)
-      .single() as { data: { role: string } | null }
+      .select('*')
+      .eq('id', userId)
+      .single()
 
-    const role = profile?.role ?? 'student'
-    if (role === 'owner') {
-      router.push('/owner')
+    const role = (profile as any)?.role ?? 'student'
+    if (role === 'admin') {
+      router.push('/admin')
     } else if (role === 'teacher') {
       router.push('/teacher')
     } else {

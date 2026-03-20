@@ -39,12 +39,12 @@ export default async function SchedulePage() {
         .in('group_id', groupIds)
         .eq('is_active', true)
         .order('day_of_week', { ascending: true })
-    : { data: [] }
+    : { data: [] as any[] }
 
   // Group sessions by day_of_week (0 = Sunday … 6 = Saturday)
   const byDay: Record<number, any[]> = {}
   for (let i = 0; i < 7; i++) byDay[i] = []
-  for (const s of (sessions ?? [])) {
+  for (const s of (sessions ?? []) as any[]) {
     const day = typeof s.day_of_week === 'number' ? s.day_of_week : parseInt(s.day_of_week, 10)
     if (day >= 0 && day <= 6) byDay[day].push(s)
   }
